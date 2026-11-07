@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { MedicineFilters, MedicineTable, MedicineTableSkeleton } from "@/components/medicine/MedicineTable";
 import { hasLocale, type Locale } from "@/lib/i18n/config";
@@ -44,6 +45,7 @@ async function Results({
   t: ReturnType<typeof getDictionary>["medicines"];
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await connection(); // Mongoose uses new Date() internally → must be request-time, not prerender
   const query = medicineListQuery.parse(firstParams(await searchParams));
   const data = await listMedicines(query);
   return (

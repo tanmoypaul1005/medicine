@@ -42,6 +42,23 @@ const MedicineSchema = new Schema(
 // Alternatives query: same generic + strength + form, sorted by price
 MedicineSchema.index({ genericId: 1, strength: 1, formSlug: 1, unitPrice: 1 });
 
+// Atlas Search index (created by `npm run db:search-index`, not by Mongoose)
+export const MEDICINE_SEARCH_INDEX = "medicine_search";
+const autocomplete = { type: "autocomplete", tokenization: "edgeGram", minGrams: 2, maxGrams: 15, foldDiacritics: true };
+export const MEDICINE_SEARCH_DEFINITION = {
+  mappings: {
+    dynamic: false,
+    fields: {
+      brand: [{ type: "string" }, autocomplete, { type: "token", normalizer: "lowercase" }], // token → sortable
+      genericName: [{ type: "string" }, autocomplete],
+      aliases: [{ type: "string" }, autocomplete],
+      manufacturerName: { type: "string" },
+      strength: { type: "string" }, // "500 mg" → tokens 500, mg
+      type: { type: "token" },
+    },
+  },
+};
+
 export type MedicineDoc = InferSchemaType<typeof MedicineSchema>;
 export const Medicine: Model<MedicineDoc> =
   models.Medicine || model<MedicineDoc>("Medicine", MedicineSchema);
