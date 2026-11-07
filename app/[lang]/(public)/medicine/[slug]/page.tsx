@@ -6,6 +6,7 @@ import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { Alternatives, GenericInfo, MedicineHeader, Variants } from "@/components/medicine/MedicineDetailView";
 import { hasLocale, href } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { localizedNotFound } from "@/lib/i18n/notFound";
 import { formatPrice } from "@/lib/format";
 import { fill } from "@/lib/utils";
 import { getMedicineDetail } from "@/server/services/medicineDetail.service";
@@ -16,8 +17,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
   const m = await getMedicineDetail(slug);
-  // notFound() here (before streaming starts) gives a real 404 status; inside <Suspense> it'd be a soft 200.
-  if (!m) notFound();
+  if (!m) localizedNotFound(lang); // see lib/i18n/notFound.ts
   const t = getDictionary(lang).medicine;
   const name = [m.brand, m.strength, m.dosageForm].filter(Boolean).join(" ");
   return {
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 // Blocking on purpose: params + cached data are awaited outside <Suspense> so an unknown slug
-// returns a real 404 (inside Suspense it would stream a soft 404 with HTTP 200). Data is "use cache" → fast.
+// redirects to the real 404 (inside Suspense it would stream a soft 404 with HTTP 200). Data is "use cache" → fast.
 export const instant = false;
 
 // Prerender the most-viewed pages at build; every other slug renders on first request, then is cached.
@@ -55,9 +55,10 @@ export default async function MedicinePage({ params }: { params: Params }) {
 async function Detail({ params }: { params: Params }) {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
-  // "use cache" (hours) — no connection() needed. Awaited outside <Suspense> on purpose: unknown slug → real 404 status.
+  // "use cache" (hours) — no connection() needed. Awaited outside <Suspense> on purpose so an
+  // unknown slug can redirect to the global 404 before anything streams.
   const m = await getMedicineDetail(slug);
-  if (!m) notFound();
+  if (!m) localizedNotFound(lang);
   const dict = getDictionary(lang);
   const t = dict.medicine;
 
