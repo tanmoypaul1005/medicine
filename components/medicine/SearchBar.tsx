@@ -42,6 +42,10 @@ function StaticSearchForm({ lang, t, defaultValue, className }: Props) {
         <Search className="ml-2 size-5 shrink-0 text-muted" aria-hidden />
         <input
           type="search"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           name="q"
           defaultValue={defaultValue}
           placeholder={t.placeholder}
@@ -99,6 +103,10 @@ function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className
         <Search className="ml-2 size-5 shrink-0 text-muted" aria-hidden />
         <input
           type="search"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           name="q"
           value={q}
           autoFocus={autoFocus}

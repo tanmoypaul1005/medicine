@@ -39,6 +39,10 @@ export default function GlobalNotFound() {
           <form action="/bn/search" className="mt-8 flex w-full gap-2">
             <input
               type="search"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
               name="q"
               placeholder={bn.search.placeholder}
               aria-label={bn.search.aria}

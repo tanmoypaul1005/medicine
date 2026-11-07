@@ -29,6 +29,10 @@ export function MedicineFilters({ lang, t, query }: Omit<Props, "data">) {
         <Search className="size-4 shrink-0 text-muted" aria-hidden />
         <input
           type="search"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           name="q"
           defaultValue={query.q}
           placeholder={t.searchPlaceholder}
