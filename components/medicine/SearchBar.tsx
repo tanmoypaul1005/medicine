@@ -1,15 +1,53 @@
 "use client";
 
-import { useId, useState, type FormEvent, type KeyboardEvent } from "react";
+import { Suspense, useId, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Loader2 } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAutocompleteQuery } from "@/store/medicineApi";
 import { cn } from "@/lib/utils";
+import { href, type Locale } from "@/lib/i18n/config";
 
-type Props = { autoFocus?: boolean; className?: string };
+type Props = {
+  lang: Locale;
+  t: { placeholder: string; aria: string; submit: string };
+  autoFocus?: boolean;
+  className?: string;
+};
 
-export function SearchBar({ autoFocus, className }: Props) {
+const FRAME =
+  "flex items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-lg shadow-brand/5 focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/15 transition";
+const INPUT =
+  "h-12 w-full min-w-0 bg-transparent text-base sm:text-lg outline-none placeholder:text-muted";
+const BUTTON =
+  "h-12 shrink-0 rounded-xl bg-brand px-5 font-semibold text-white dark:text-slate-900 hover:opacity-90 transition";
+
+// RTK Query hooks read Date.now() during render, which cacheComponents forbids in prerender.
+// So the interactive bar renders inside Suspense; the prerendered fallback is a plain
+// GET form with identical look (also works before JS loads).
+export function SearchBar(props: Props) {
+  return (
+    <Suspense fallback={<StaticSearchForm {...props} />}>
+      <InteractiveSearchBar {...props} />
+    </Suspense>
+  );
+}
+
+function StaticSearchForm({ lang, t, className }: Props) {
+  return (
+    <form action={href(lang, "/search")} role="search" className={cn("relative w-full", className)}>
+      <div className={FRAME}>
+        <Search className="ml-2 size-5 shrink-0 text-muted" aria-hidden />
+        <input type="search" name="q" placeholder={t.placeholder} aria-label={t.aria} className={INPUT} />
+        <button type="submit" className={BUTTON}>
+          {t.submit}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function InteractiveSearchBar({ lang, t, autoFocus, className }: Props) {
   const router = useRouter();
   const listId = useId();
   const [q, setQ] = useState("");
@@ -23,12 +61,12 @@ export function SearchBar({ autoFocus, className }: Props) {
   const go = (query: string) => {
     if (!query.trim()) return;
     setOpen(false);
-    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    router.push(href(lang, `/search?q=${encodeURIComponent(query.trim())}`));
   };
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (showList && active >= 0) router.push(`/medicine/${suggestions[active].slug}`);
+    if (showList && active >= 0) router.push(href(lang, `/medicine/${suggestions[active].slug}`));
     else go(q);
   };
 
@@ -47,10 +85,11 @@ export function SearchBar({ autoFocus, className }: Props) {
 
   return (
     <form onSubmit={onSubmit} role="search" className={cn("relative w-full", className)}>
-      <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-lg shadow-brand/5 focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/15 transition">
+      <div className={FRAME}>
         <Search className="ml-2 size-5 shrink-0 text-muted" aria-hidden />
         <input
           type="search"
+          name="q"
           value={q}
           autoFocus={autoFocus}
           onChange={(e) => {
@@ -61,20 +100,17 @@ export function SearchBar({ autoFocus, className }: Props) {
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 120)}
           onKeyDown={onKeyDown}
-          placeholder="ওষুধের নাম লিখুন — Napa, Paracetamol, নাপা…"
-          aria-label="Search medicine"
+          placeholder={t.placeholder}
+          aria-label={t.aria}
           aria-autocomplete="list"
           aria-controls={listId}
           aria-expanded={showList}
           role="combobox"
-          className="h-12 w-full min-w-0 bg-transparent text-base sm:text-lg outline-none placeholder:text-muted"
+          className={INPUT}
         />
         {isFetching && <Loader2 className="size-5 shrink-0 animate-spin text-muted" aria-hidden />}
-        <button
-          type="submit"
-          className="h-12 shrink-0 rounded-xl bg-brand px-5 font-semibold text-white dark:text-slate-900 hover:opacity-90 transition"
-        >
-          খুঁজুন
+        <button type="submit" className={BUTTON}>
+          {t.submit}
         </button>
       </div>
 
@@ -89,7 +125,7 @@ export function SearchBar({ autoFocus, className }: Props) {
               key={m.slug}
               role="option"
               aria-selected={i === active}
-              onMouseDown={() => router.push(`/medicine/${m.slug}`)}
+              onMouseDown={() => router.push(href(lang, `/medicine/${m.slug}`))}
               onMouseEnter={() => setActive(i)}
               className={cn(
                 "flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left",

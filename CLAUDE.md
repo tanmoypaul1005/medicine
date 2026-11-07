@@ -8,8 +8,14 @@ Bangladesh medicine helper web app: search any medicine (brand/generic/Bangla/ty
 ## Stack
 Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict, Tailwind 4 (tokens in `app/globals.css`), lucide-react, RTK Query, Zod, Mongoose → MongoDB Atlas (db `medicinecheck`). Planned: Atlas Search, Auth.js, Cloudinary, Gemini, Upstash Redis, Vercel. No Shadcn yet (plain Tailwind + `cn()`).
 
+## i18n (bn default, en)
+- URL-based: `app/[lang]/` is the root layout (no `app/layout.tsx`). `proxy.ts` redirects un-prefixed paths → `/bn|/en` (cookie `NEXT_LOCALE` → Accept-Language → bn). `/api` is not localized.
+- Strings: `lib/i18n/dictionaries/bn.ts` (source of truth, defines `Dictionary` type) + `en.ts` (must match). Server: `getDictionary(lang)`; pass the needed slice to client components as props (no client i18n lib).
+- Links: always `href(lang, "/path")` from `lib/i18n/config.ts`. Pages: `const { lang } = await params; if (!hasLocale(lang)) notFound();`
+- New UI text → add to BOTH dictionaries.
+
 ## Structure
-- `app/(public)/` public pages (`page.tsx` = home); `app/api/*/route.ts` Route Handlers
+- `app/[lang]/(public)/` public pages (`page.tsx` = home); `app/api/*/route.ts` Route Handlers
 - `components/medicine/` SearchBar, Disclaimer…; `components/layout/` SiteHeader/Footer
 - `models/` Mongoose models, all exported from `models/index.ts`
 - `server/services/` all DB logic; `server/actions/` Server Actions; `server/validators/` Zod
@@ -29,6 +35,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - `cacheComponents` ON: no `export const dynamic/revalidate` in routes; no `new Date()`/`Math.random()` during render of prerendered pages (use `"use cache"`, client component, or `await connection()`).
 - Windows + Node 24: Atlas SRV lookup fails (`querySrv ECONNREFUSED`). Fixed via `.env` `MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1` (read in `lib/db.ts`).
 - eslint `react-hooks/refs`: no `ref.current` in render → `useState(makeStore)` in StoreProvider.
+- Redux `combineReducers` calls `Math.random()` → build `rootReducer` at module level in `store/store.ts` (never inside `makeStore`). Add new slices there.
 - Shell: PowerShell 5.1 primary; bash heredocs unreliable here, so use the Write tool for files.
 - User usually runs `npm run dev` on :3000 already; don't start a second server, just hit `http://localhost:3000`.
 
@@ -45,10 +52,11 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - [x] Project setup, deps, folder structure
 - [x] Mongoose connection + 8 models + `/api/health`
 - [x] Homepage UI (search bar w/ autocomplete UI, scan CTA, popular list static, features, disclaimer)
+- [x] bn/en i18n (URL-based, header toggle); homepage, header, footer translated
 - [ ] Kaggle CSV → `data/ANALYSIS.md` → finalize models → `scripts/import` (`db:import`, `db:import:dry`, `db:verify`)
 - [ ] Atlas Search index + `/api/search`, `/api/autocomplete` (query parse "napa 500"; SearchLog on zero results)
 - [ ] `/medicine/[slug]`, `/generic/[slug]` (ISR, SEO metadata, alternatives)
 - [ ] Warnings + `/interactions`
 - [ ] Auth.js, account, save/report (Server Actions)
 - [ ] `/scan` (Cloudinary signed upload → Gemini → match → alternatives + interactions)
-- [ ] Admin panel, bn/en i18n, rate limits, Lighthouse, deploy
+- [ ] Admin panel, rate limits, Lighthouse, deploy

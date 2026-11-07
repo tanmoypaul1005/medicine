@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { ArrowRight, Camera, GitCompareArrows, ShieldCheck, Wallet } from "lucide-react";
 import { SearchBar } from "@/components/medicine/SearchBar";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
+import { hasLocale, href } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/getDictionary";
 
 // Static placeholder until popularity data is imported (no prices shown here on purpose)
 const POPULAR = [
@@ -13,53 +16,47 @@ const POPULAR = [
   { slug: "alatrol-10-mg-tablet", brand: "Alatrol", strength: "10 mg", generic: "Cetirizine" },
 ];
 
-const FEATURES = [
-  {
-    icon: Wallet,
-    title: "সস্তা বিকল্প",
-    body: "একই generic, strength ও form-এর অন্য brand দাম অনুযায়ী — কত টাকা বাঁচবে তা সহ।",
-  },
-  {
-    icon: GitCompareArrows,
-    title: "Drug interaction",
-    body: "দুই বা তার বেশি ওষুধ একসাথে খাওয়া নিরাপদ কিনা, ঝুঁকির মাত্রা সহ।",
-    href: "/interactions",
-  },
-  {
-    icon: ShieldCheck,
-    title: "সতর্কতা",
-    body: "Pregnancy category, contraindication আর সাধারণ side effect এক জায়গায়।",
-  },
-];
+const EXAMPLES = ["napa 500", "paracetamol", "নাপা", "seclo"];
 
-export default function HomePage() {
+export default async function HomePage({ params }: PageProps<"/[lang]">) {
+  const { lang } = await params;
+  if (!hasLocale(lang)) notFound();
+  const t = getDictionary(lang);
+  const h = t.home;
+
+  const features: { icon: typeof Wallet; title: string; body: string; path?: string }[] = [
+    { icon: Wallet, ...h.features.alternatives },
+    { icon: GitCompareArrows, ...h.features.interactions, path: "/interactions" },
+    { icon: ShieldCheck, ...h.features.warnings },
+  ];
+
   return (
     <>
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-40 mx-auto h-[28rem] max-w-4xl rounded-full bg-brand/15 blur-3xl"
+          className="pointer-events-none absolute inset-x-0 -top-40 mx-auto h-112 max-w-4xl rounded-full bg-brand/15 blur-3xl"
         />
         <div className="relative mx-auto flex max-w-3xl flex-col items-center px-4 pt-16 pb-12 text-center sm:pt-24">
           <span className="mb-5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted">
-            বাংলাদেশের ২০,০০০+ ওষুধের তথ্য
+            {h.badge}
           </span>
           <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
-            ওষুধের দাম জানুন, <span className="text-brand">সস্তা বিকল্প</span> খুঁজুন
+            {h.titleA}
+            <span className="text-brand">{h.titleHighlight}</span>
+            {h.titleB}
           </h1>
-          <p className="mt-4 max-w-xl text-base text-muted sm:text-lg">
-            Brand, generic, বাংলা নাম বা ভুল বানান — যেভাবেই লিখুন, সঠিক ওষুধ খুঁজে পাবেন।
-          </p>
+          <p className="mt-4 max-w-xl text-base text-muted sm:text-lg">{h.subtitle}</p>
 
-          <SearchBar autoFocus className="mt-8" />
+          <SearchBar lang={lang} t={t.search} autoFocus className="mt-8" />
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm text-muted">
-            <span>উদাহরণ:</span>
-            {["napa 500", "paracetamol", "নাপা", "seclo"].map((s) => (
+            <span>{h.examples}</span>
+            {EXAMPLES.map((s) => (
               <Link
                 key={s}
-                href={`/search?q=${encodeURIComponent(s)}`}
+                href={href(lang, `/search?q=${encodeURIComponent(s)}`)}
                 className="rounded-full border border-border bg-card px-3 py-1 hover:border-brand hover:text-foreground transition"
               >
                 {s}
@@ -72,7 +69,7 @@ export default function HomePage() {
       {/* Prescription scan CTA */}
       <section className="mx-auto max-w-6xl px-4">
         <Link
-          href="/scan"
+          href={href(lang, "/scan")}
           className="group flex flex-col items-start gap-4 rounded-2xl bg-brand p-6 text-white dark:text-slate-900 sm:flex-row sm:items-center sm:justify-between sm:p-8"
         >
           <div className="flex items-center gap-4">
@@ -80,26 +77,24 @@ export default function HomePage() {
               <Camera className="size-6" aria-hidden />
             </span>
             <div>
-              <h2 className="text-lg font-semibold sm:text-xl">Prescription scan করুন</h2>
-              <p className="text-sm opacity-85">
-                ছবি তুলুন — সব ওষুধ, তাদের সস্তা বিকল্প আর মোট সাশ্রয় একসাথে দেখুন।
-              </p>
+              <h2 className="text-lg font-semibold sm:text-xl">{h.scanTitle}</h2>
+              <p className="text-sm opacity-85">{h.scanBody}</p>
             </div>
           </div>
           <span className="inline-flex items-center gap-1 rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold">
-            শুরু করুন <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden />
+            {h.scanCta} <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden />
           </span>
         </Link>
       </section>
 
       {/* Popular medicines */}
       <section className="mx-auto max-w-6xl px-4 pt-14">
-        <h2 className="mb-4 text-xl font-semibold">জনপ্রিয় ওষুধ</h2>
+        <h2 className="mb-4 text-xl font-semibold">{h.popular}</h2>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {POPULAR.map((m) => (
             <li key={m.slug}>
               <Link
-                href={`/medicine/${m.slug}`}
+                href={href(lang, `/medicine/${m.slug}`)}
                 className="block h-full rounded-xl border border-border bg-card p-4 hover:border-brand hover:shadow-md transition"
               >
                 <p className="font-semibold">{m.brand}</p>
@@ -114,7 +109,7 @@ export default function HomePage() {
       {/* Features */}
       <section className="mx-auto max-w-6xl px-4 pt-14 pb-12">
         <div className="grid gap-4 sm:grid-cols-3">
-          {FEATURES.map(({ icon: Icon, title, body, href }) => {
+          {features.map(({ icon: Icon, title, body, path }) => {
             const inner = (
               <>
                 <span className="grid size-10 place-items-center rounded-lg bg-brand-soft text-brand">
@@ -125,8 +120,8 @@ export default function HomePage() {
               </>
             );
             const cls = "block h-full rounded-2xl border border-border bg-card p-6";
-            return href ? (
-              <Link key={title} href={href} className={`${cls} hover:border-brand transition`}>
+            return path ? (
+              <Link key={title} href={href(lang, path)} className={`${cls} hover:border-brand transition`}>
                 {inner}
               </Link>
             ) : (
@@ -137,7 +132,7 @@ export default function HomePage() {
           })}
         </div>
 
-        <Disclaimer className="mt-10" />
+        <Disclaimer text={t.disclaimer} className="mt-10" />
       </section>
     </>
   );

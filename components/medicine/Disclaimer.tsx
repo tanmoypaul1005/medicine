@@ -1,7 +1,7 @@
 import { ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function Disclaimer({ className }: { className?: string }) {
+export function Disclaimer({ text, className }: { text: string; className?: string }) {
   return (
     <p
       role="note"
@@ -11,9 +11,7 @@ export function Disclaimer({ className }: { className?: string }) {
       )}
     >
       <ShieldAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-      <span>
-        এটা শুধু তথ্য। ডাক্তারের পরামর্শ ছাড়া ওষুধ শুরু, বন্ধ বা বদলাবেন না।
-      </span>
+      <span>{text}</span>
     </p>
   );
 }
