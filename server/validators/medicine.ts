@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const MEDICINE_SORTS = ["brand", "price-asc", "price-desc"] as const;
+export const MEDICINE_VIEWS = ["all", "brand"] as const; // all = one row per strength/form; brand = grouped by brand
 export const MEDICINE_PAGE_SIZE = 50;
 
 // Lenient: bad/missing params fall back to defaults instead of erroring (URL is user-editable).
@@ -8,6 +9,7 @@ export const medicineListQuery = z.object({
   q: z.string().trim().max(60).catch("").default(""),
   type: z.enum(["all", "allopathic", "herbal"]).catch("all").default("all"),
   sort: z.enum(MEDICINE_SORTS).catch("brand").default("brand"),
+  view: z.enum(MEDICINE_VIEWS).catch("all").default("all"),
   page: z.coerce.number().int().min(1).max(10_000).catch(1).default(1),
 });
 

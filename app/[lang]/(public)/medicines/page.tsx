@@ -3,11 +3,13 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
-import { MedicineFilters, MedicineTable, MedicineTableSkeleton } from "@/components/medicine/MedicineTable";
+import { BrandList } from "@/components/medicine/BrandList";
+import { MedicineFilters } from "@/components/medicine/MedicineFilters";
+import { MedicineTable, MedicineTableSkeleton, ViewToggle } from "@/components/medicine/MedicineTable";
 import { hasLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { pageMeta } from "@/lib/seo";
-import { listMedicines } from "@/server/services/medicine.service";
+import { listBrands, listMedicines } from "@/server/services/medicine.service";
 import { firstParams, medicineListQuery } from "@/server/validators/medicine";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/medicines">): Promise<Metadata> {
@@ -48,11 +50,21 @@ async function Results({
 }) {
   await connection(); // Mongoose uses new Date() internally → must be request-time, not prerender
   const query = medicineListQuery.parse(firstParams(await searchParams));
-  const data = await listMedicines(query);
   return (
     <>
-      <MedicineFilters lang={lang} t={t} query={query} />
-      <MedicineTable lang={lang} t={t} query={query} data={data} />
+      <ViewToggle lang={lang} t={t} query={query} />
+      {/* key: reset local search text when the view/filters change via links (toggle, reset) */}
+      <MedicineFilters
+        key={`${query.view}|${query.type}|${query.sort}`}
+        lang={lang}
+        t={{ searchPlaceholder: t.searchPlaceholder, reset: t.reset, types: t.types, sorts: t.sorts }}
+        query={query}
+      />
+      {query.view === "brand" ? (
+        <BrandList lang={lang} t={t} query={query} data={await listBrands(query)} />
+      ) : (
+        <MedicineTable lang={lang} t={t} query={query} data={await listMedicines(query)} />
+      )}
     </>
   );
 }

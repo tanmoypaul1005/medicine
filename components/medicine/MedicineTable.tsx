@@ -1,66 +1,36 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
 import { formatPrice, priceBasis } from "@/lib/format";
+import { listHref } from "@/lib/medicineListUrl";
 import { cn, fill } from "@/lib/utils";
 import type { MedicineList } from "@/server/services/medicine.service";
-import { MEDICINE_SORTS, type MedicineListQuery } from "@/server/validators/medicine";
+import { MEDICINE_VIEWS, type MedicineListQuery } from "@/server/validators/medicine";
 
 type T = Dictionary["medicines"];
 type Props = { lang: Locale; t: T; query: MedicineListQuery; data: MedicineList };
 
-function pageHref(lang: Locale, query: MedicineListQuery, page: number) {
-  const p = new URLSearchParams();
-  if (query.q) p.set("q", query.q);
-  if (query.type !== "all") p.set("type", query.type);
-  if (query.sort !== "brand") p.set("sort", query.sort);
-  if (page > 1) p.set("page", String(page));
-  const qs = p.toString();
-  return href(lang, `/medicines${qs ? `?${qs}` : ""}`);
-}
+const pageHref = (lang: Locale, query: MedicineListQuery, page: number) => listHref(lang, query, { page });
 
-const FIELD = "h-10 rounded-lg border border-border bg-card px-3 text-sm outline-none focus:border-brand";
-
-export function MedicineFilters({ lang, t, query }: Omit<Props, "data">) {
+/** "All medicines | By brand" segmented toggle (plain links → works without JS, keeps filters). */
+export function ViewToggle({ lang, t, query }: Omit<Props, "data">) {
   return (
-    <form action={href(lang, "/medicines")} className="flex flex-wrap items-center gap-2">
-      <div className={cn(FIELD, "flex min-w-56 flex-1 items-center gap-2")}>
-        <Search className="size-4 shrink-0 text-muted" aria-hidden />
-        <input
-          type="search"
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          name="q"
-          defaultValue={query.q}
-          placeholder={t.searchPlaceholder}
-          aria-label={t.searchPlaceholder}
-          className="h-full w-full bg-transparent outline-none placeholder:text-muted"
-        />
-      </div>
-      <select name="type" defaultValue={query.type} aria-label={t.types.all} className={FIELD}>
-        {(["all", "allopathic", "herbal"] as const).map((v) => (
-          <option key={v} value={v}>
-            {t.types[v]}
-          </option>
-        ))}
-      </select>
-      <select name="sort" defaultValue={query.sort} aria-label={t.sorts.brand} className={FIELD}>
-        {MEDICINE_SORTS.map((v) => (
-          <option key={v} value={v}>
-            {t.sorts[v]}
-          </option>
-        ))}
-      </select>
-      <button type="submit" className="h-10 rounded-lg bg-brand px-4 text-sm font-semibold text-white dark:text-slate-900 hover:opacity-90 transition">
-        {t.filter}
-      </button>
-      <Link href={href(lang, "/medicines")} className="h-10 content-center px-2 text-sm text-muted hover:text-foreground">
-        {t.reset}
-      </Link>
-    </form>
+    <nav aria-label={t.viewAria} className="inline-flex rounded-xl border border-border bg-card p-1 text-sm">
+      {MEDICINE_VIEWS.map((v) => (
+        <Link
+          key={v}
+          href={listHref(lang, query, { view: v, page: 1 })}
+          aria-current={query.view === v ? "page" : undefined}
+          className={cn(
+            "rounded-lg px-4 py-1.5 font-medium transition",
+            query.view === v ? "bg-brand text-white dark:text-slate-900" : "text-muted hover:text-foreground"
+          )}
+        >
+          {t.views[v]}
+        </Link>
+      ))}
+    </nav>
   );
 }
 
