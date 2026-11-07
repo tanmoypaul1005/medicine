@@ -6,7 +6,7 @@
 Bangladesh medicine helper web app: search any medicine (brand/generic/Bangla/typo), see price, cheaper alternatives (same generic+strength+form), warnings, drug interactions, prescription scan (Gemini Vision OCR). Info only, never medical advice; every medicine/alt/interaction/scan/condition page shows `<Disclaimer />`. Symptom→medicine ONLY via the curated conditions guide (`docs/conditions-feature.md`): OTC allow-list per condition, label evidence required, red flags first, no dosing; never antibiotics/steroids/sedatives/controlled/Rx-only.
 
 ## Stack
-Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict, Tailwind 4 (tokens in `app/globals.css`), lucide-react, RTK Query, Zod, Mongoose → MongoDB Atlas (db `medicinecheck`). Planned: Atlas Search, Auth.js, Cloudinary, Gemini, Upstash Redis, Vercel. No Shadcn yet (plain Tailwind + `cn()`).
+Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict, Tailwind 4 (tokens in `app/globals.css`), lucide-react, RTK Query, Zod, Mongoose → MongoDB Atlas (db `medicinecheck`) + Atlas Search, Gemini (`@google/genai`). Planned: Auth.js, Upstash Redis, Vercel. No Shadcn yet (plain Tailwind + `cn()`).
 
 ## i18n (bn default, en)
 - URL-based: `app/[lang]/` is the root layout (no `app/layout.tsx`). `proxy.ts` redirects un-prefixed paths → `/bn|/en` (cookie `NEXT_LOCALE` → Accept-Language → bn). `/api` is not localized.
@@ -22,7 +22,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - Interaction checker `/[lang]/interactions?m=slug1,slug2` (max 8): `checkInteractions` (`server/services/interaction.service.ts`) → per medicine pair: duplicate (same ingredient) > warning > caution > none. UI: `components/interactions/InteractionPicker.tsx` (client, URL state) + `InteractionResults.tsx` (server). API `GET /api/interactions?m=`.
 - Conditions guide: `Condition` model ← `npm run db:conditions[:dry]` (`scripts/import/conditions.ts` + catalog `scripts/import/lib/conditionCatalog.ts`: names, aliases, red flags, label `terms`, OTC `allow` keys, `forms`). Generic qualifies only if ALL ingredients allowed + indication sentence matches + a brand in allowed form exists. `ALWAYS_EXCLUDED_FORMS` in `lib/conditions.ts`. Service `server/services/condition.service.ts` (`listConditions`/`getCondition` "use cache" tag `conditions`, `findConditions` whole-word alias match). Pages `/[lang]/conditions`, `/[lang]/condition/[slug]` (all prerendered); home chips (8 + native `<details>` "see more"); search page shows matching conditions. UI `components/conditions/ConditionViews.tsx`. 30 conditions, `reviewed:false` until clinician review.
 - Cache refresh after scripts write DB: `scripts/lib/revalidate.ts` → `POST /api/revalidate` (`x-revalidate-secret`, tags). `revalidateTag(tag,"max")` = stale-while-revalidate: first request may still be old.
-- Unbuilt features linked in header (`/scan`, `/account`) render `components/layout/ComingSoon.tsx` (200, noindex); replace when implementing.
+- Prescription scan (`docs/scan-feature.md`): `/[lang]/scan` → `components/scan/ScanFlow.tsx` (client: compress ≤1600px JPEG → `POST /api/scan` → review step, user must confirm/fix each match) → `/[lang]/scan/result?m=slugs` (noindex; price + cheapest same-basis alternative + `checkInteractions`). `server/services/scan.service.ts`: Gemini (`@google/genai`, model `GEMINI_MODEL` default `gemini-3.5-flash`, JSON schema, medicines only — no patient data/dosing) → match via `autocomplete()` + score (brand +3, strength +2, form +1; `sure` ≥5 & legible). Images NEVER stored/logged. Rate limit 10/h/IP (`lib/rateLimit.ts`, in-memory, counted after validation).
+- Unbuilt features linked in header (`/account`) render `components/layout/ComingSoon.tsx` (200, noindex); replace when implementing.
 - Pages: `/[lang]/medicines` (table: `q`, `type`, `sort`, `page` GET params → `medicineListQuery` → `listMedicines` in `server/services/medicine.service.ts`, 50/page)
 - `models/` Mongoose models, all exported from `models/index.ts`
 - `server/services/` all DB logic; `server/actions/` Server Actions; `server/validators/` Zod
@@ -52,6 +53,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - Real 404 for dynamic `[slug]`: `generateStaticParams` + `export const instant = false` + await params/`"use cache"` data at page top level (not in Suspense, else soft 200).
 - Pages reading `searchParams`/DB: put that part in an async child inside `<Suspense>` (pattern: `app/[lang]/(public)/medicines/page.tsx`). Services import `"server-only"`.
 - eslint `react-hooks/refs`: no `ref.current` in render → `useState(makeStore)` in StoreProvider.
+- Dev "instant" validation (`Could not validate instant because an error prevented the target segment from rendering`): client components rendered OUTSIDE `<Suspense>` must not call `useRouter()` in render — use `<Link>` for navigation (pattern: `components/scan/ScanFlow.tsx`), or put the component inside `<Suspense>`. Debug via dev MCP: `POST /_next/mcp` tools `get_errors`/`get_logs`.
 - RTK Query hooks (`useXQuery`) read `Date.now()` in render → any client component using them must render inside `<Suspense>` with a static fallback (pattern: `components/medicine/SearchBar.tsx`).
 - Stale dev cache (old HTML after moves/renames): stop dev server, delete `.next`, restart, Ctrl+Shift+R. Don't run `next build` while dev is running.
 - Redux `combineReducers` calls `Math.random()` → build `rootReducer` at module level in `store/store.ts` (never inside `makeStore`). Add new slices there.
@@ -68,7 +70,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - Others: Manufacturer, User(role), Prescription, Report, SearchLog. Models are provisional until the CSV analysis.
 
 ## Env (`.env`)
-`MONGODB_URI`, `MONGODB_DNS_SERVERS`, `REVALIDATE_SECRET` (scripts → `/api/revalidate`), optional `APP_URL` (default `http://localhost:3000`). Planned: `GEMINI_API_KEY`, `CLOUDINARY_*`, `AUTH_*`, `UPSTASH_*`.
+`MONGODB_URI`, `MONGODB_DNS_SERVERS`, `REVALIDATE_SECRET` (scripts → `/api/revalidate`), optional `APP_URL` (default `http://localhost:3000`), `GEMINI_API_KEY`, optional `GEMINI_MODEL`. Planned: `AUTH_*`, `UPSTASH_*`. (Cloudinary dropped: scan images aren't stored.)
 
 ## Status
 - [x] Project setup, deps, folder structure
@@ -86,5 +88,6 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - [x] Common conditions guide (30 conditions, OTC-only, label evidence) — [ ] clinician review of red flags + allow-lists before launch
 - [ ] Better interaction source (e.g. DDInter/DrugBank, license check) — current data misses pairs whose labels don't mention each other (e.g. warfarin + ciprofloxacin)
 - [ ] Auth.js, account, save/report (Server Actions)
-- [ ] `/scan` (Cloudinary signed upload → Gemini → match → alternatives + interactions)
+- [x] `/scan` (Gemini → match → user review → alternatives + interactions; no image storage)
+- [ ] Before launch: Gemini paid tier (free tier may use data for training — health data), Upstash rate limit, test with real handwritten prescriptions
 - [ ] Admin panel, rate limits, Lighthouse, deploy
