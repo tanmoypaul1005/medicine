@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
+import { formatPrice } from "@/lib/format";
 import { cn, fill } from "@/lib/utils";
 import type { MedicineList } from "@/server/services/medicine.service";
 import { MEDICINE_SORTS, type MedicineListQuery } from "@/server/validators/medicine";
@@ -61,7 +62,6 @@ export function MedicineFilters({ lang, t, query }: Omit<Props, "data">) {
 
 export function MedicineTable({ lang, t, query, data }: Props) {
   const nf = new Intl.NumberFormat(lang === "bn" ? "bn-BD" : "en-US");
-  const pf = new Intl.NumberFormat(lang === "bn" ? "bn-BD" : "en-US", { maximumFractionDigits: 2 });
   const { rows, total, page, pages } = data;
 
   return (
@@ -105,7 +105,7 @@ export function MedicineTable({ lang, t, query, data }: Props) {
                     {m.manufacturerName ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-right font-medium whitespace-nowrap">
-                    {m.unitPrice != null ? `৳${pf.format(m.unitPrice)}` : t.noPrice}
+                    {m.unitPrice != null ? formatPrice(lang, m.unitPrice) : t.noPrice}
                   </td>
                 </tr>
               ))}

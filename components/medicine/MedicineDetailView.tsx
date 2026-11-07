@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AlertTriangle, BadgePercent, ChevronDown, ExternalLink, Factory, FlaskConical, Info, Pill } from "lucide-react";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
+import { formatPrice } from "@/lib/format";
 import { cn, fill } from "@/lib/utils";
 import type { GenericSection } from "@/models/Generic";
 import type { MedicineDetail } from "@/server/services/medicineDetail.service";
@@ -23,10 +24,7 @@ const INFO_SECTIONS: GenericSection[] = [
   "storage",
 ];
 
-function money(lang: Locale) {
-  const nf = new Intl.NumberFormat(lang === "bn" ? "bn-BD" : "en-US", { maximumFractionDigits: 2 });
-  return (n: number) => `৳${nf.format(n)}`;
-}
+const money = (lang: Locale) => (n: number) => formatPrice(lang, n);
 
 export function MedicineHeader({ lang, t, m }: Props) {
   const fmt = money(lang);

@@ -6,6 +6,7 @@ import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { Alternatives, GenericInfo, MedicineHeader, Variants } from "@/components/medicine/MedicineDetailView";
 import { hasLocale, href } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { formatPrice } from "@/lib/format";
 import { fill } from "@/lib/utils";
 import { getMedicineDetail } from "@/server/services/medicineDetail.service";
 
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       name,
       generic: m.generic?.name ?? m.genericNameRaw ?? "",
       maker: m.manufacturerName ?? "",
-      price: m.unitPrice != null ? `৳${m.unitPrice}` : t.noPrice,
+      price: m.unitPrice != null ? formatPrice(lang, m.unitPrice) : t.noPrice,
     }),
     alternates: {
       canonical: `/${lang}/medicine/${slug}`,

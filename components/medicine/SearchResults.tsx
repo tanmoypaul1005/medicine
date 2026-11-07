@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, SearchX } from "lucide-react";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
 import type { SearchResult } from "@/lib/search/types";
+import { formatPrice } from "@/lib/format";
 import { fill } from "@/lib/utils";
 import { PageLink } from "./MedicineTable";
 
@@ -14,7 +15,6 @@ const pageHref = (lang: Locale, q: string, page: number) =>
 
 export function SearchResults({ lang, t, q, data }: Props) {
   const nf = new Intl.NumberFormat(lang === "bn" ? "bn-BD" : "en-US");
-  const pf = new Intl.NumberFormat(lang === "bn" ? "bn-BD" : "en-US", { maximumFractionDigits: 2 });
   const { hits, total, page, pages } = data;
 
   if (total === 0) {
@@ -60,7 +60,7 @@ export function SearchResults({ lang, t, q, data }: Props) {
               <div className="shrink-0 text-right">
                 {m.unitPrice != null ? (
                   <>
-                    <p className="font-semibold">৳{pf.format(m.unitPrice)}</p>
+                    <p className="font-semibold">{formatPrice(lang, m.unitPrice)}</p>
                     <p className="text-xs text-muted">{t.perUnit}</p>
                   </>
                 ) : (

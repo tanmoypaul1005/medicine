@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search, Loader2 } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAutocompleteQuery } from "@/store/medicineApi";
+import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { href, type Locale } from "@/lib/i18n/config";
 
@@ -146,7 +147,9 @@ function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className
                 <span className="text-sm text-muted">{[m.strength, m.dosageForm].filter(Boolean).join(" · ")}</span>
                 <span className="block truncate text-sm text-muted">{m.genericName}</span>
               </span>
-              {m.unitPrice != null && <span className="shrink-0 text-sm font-medium">৳{m.unitPrice}</span>}
+              {m.unitPrice != null && (
+                <span className="shrink-0 text-sm font-medium">{formatPrice(lang, m.unitPrice)}</span>
+              )}
             </li>
           ))}
           <li
