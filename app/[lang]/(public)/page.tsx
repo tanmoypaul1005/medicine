@@ -73,12 +73,12 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
           <span className="mb-5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted">
             {h.badge}
           </span>
-          <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
+          <h1 className="text-2xl font-bold leading-tight tracking-tight  md:text-5xl">
             {h.titleA}
             <span className="text-brand">{h.titleHighlight}</span>
             {h.titleB}
           </h1>
-          <p className="mt-4 max-w-xl text-base text-muted sm:text-lg">{h.subtitle}</p>
+          <p className="mt-4 max-w-xl text-2xl text-base text-muted md:text-lg">{h.subtitle}</p>
 
           <SearchBar lang={lang} t={t.search} autoFocus className="mt-8" />
 
