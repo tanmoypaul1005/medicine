@@ -12,6 +12,8 @@
     "db:import:dry": "tsx scripts/import/run.ts --dry",
     "db:verify": "tsx --env-file=.env scripts/import/verify.ts",
     "db:search-index": "tsx --env-file=.env scripts/import/search-index.ts",
+    "db:interactions": "tsx --env-file=.env scripts/import/interactions.ts",
+    "db:interactions:dry": "tsx --env-file=.env scripts/import/interactions.ts --dry",
     "test:search": "tsx scripts/test-search.ts"
   },
   "dependencies": {

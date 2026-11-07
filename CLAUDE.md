@@ -19,7 +19,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - `components/medicine/` SearchBar, Disclaimer, MedicineTable (filters/table/pagination/skeleton, server-only render)…; `components/layout/` SiteHeader/Footer
 - Search: `server/services/search.service.ts` (`parseQuery` "napa 500"→text+strength; Bangla via `lib/search/bnTranslit.ts` + spelling variants k/c, j/g/z, ks/x, inherent "o"; Atlas `$search` index `medicine_search` (def in `models/Medicine.ts`, create with `npm run db:search-index`); regex fallback on error/0 hits; SearchLog on 0 hits). Shared client/server types in `lib/search/types.ts`. API: `/api/autocomplete?q=`, `/api/search?q=&page=`. Page `/[lang]/search` (noindex). Regression: `npm run test:search` (dev server must run; cases in `tests/search-cases.json`; add a case for every search fix).
 - Medicine detail `/[lang]/medicine/[slug]`: `getMedicineDetail` (`server/services/medicineDetail.service.ts`, `"use cache"` + `cacheLife("hours")` + `cacheTag("medicine:<slug>")`) → header/price/packs, alternatives (same genericId+strength+formSlug, cheapest 15, savings only when same price basis), brand variants, generic sections (`components/medicine/MedicineDetailView.tsx`, HTML in `.med-html` styles in globals.css). `generateStaticParams` prerenders a few popular slugs; page awaits params + data outside Suspense so unknown slug = real 404.
-- Unbuilt features linked in header (`/interactions`, `/scan`, `/account`) render `components/layout/ComingSoon.tsx` (200, noindex); replace when implementing.
+- Interaction checker `/[lang]/interactions?m=slug1,slug2` (max 8): `checkInteractions` (`server/services/interaction.service.ts`) → per medicine pair: duplicate (same ingredient) > warning > caution > none. UI: `components/interactions/InteractionPicker.tsx` (client, URL state) + `InteractionResults.tsx` (server). API `GET /api/interactions?m=`.
+- Unbuilt features linked in header (`/scan`, `/account`) render `components/layout/ComingSoon.tsx` (200, noindex); replace when implementing.
 - Pages: `/[lang]/medicines` (table: `q`, `type`, `sort`, `page` GET params → `medicineListQuery` → `listMedicines` in `server/services/medicine.service.ts`, 50/page)
 - `models/` Mongoose models, all exported from `models/index.ts`
 - `server/services/` all DB logic; `server/actions/` Server Actions; `server/validators/` Zod
@@ -60,7 +61,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - Generic: name, slug, aliases[], drugClass, pregnancyCategory?, `sections.{indication,dosage,interaction,contraindications,sideEffects,pregnancyLactation,precautions,…}` (sanitized HTML, `GENERIC_SECTIONS`), monographUrl, brandCount. Warnings live on Generic, not brand. Render sections only via sanitized HTML.
 - Medicine: brand, slug (own `slugify(brand strength form)`, `-<sourceId>` on clash), aliases[], type allopathic|herbal, genericId+genericName, manufacturerId+manufacturerName (denormalized for `$search`), strength?, dosageForm (exact string) + formSlug, unitPrice (per unit else cheapest pack; null = unavailable), packs[{label,price,qty?,qtyPrice?}], priceText. Index `{genericId,strength,formSlug,unitPrice}`.
 - No DosageForm/DrugClass/Indication collections; indication data never used for browsing (no symptom→medicine).
-- Interaction: pair stored sorted (pre-validate), unique `{genericA,genericB}`, `source` required; missing pair = "তথ্য নেই", never "safe".
+- Interaction: ingredient-level (`lib/ingredients.ts` `ingredientsOf`/`matchTerms`/`pairKey`), unique `pairKey` "a|b" sorted, `severity` warning|caution (warning only from explicit label wording: contraindicated/avoid/should not…), `evidence[]` = verbatim label sentences (+`via` when label named a drug class), `source` required. Mined by `npm run db:interactions[:dry]` (`scripts/import/interactions.ts`, class map `scripts/import/lib/drugClasses.ts`; negated sentences skipped; self-class and same-mineral pairs skipped). ~7.5k pairs. Missing pair = "তথ্য নেই", never "safe".
 - Others: Manufacturer, User(role), Prescription, Report, SearchLog. Models are provisional until the CSV analysis.
 
 ## Env (`.env`)
@@ -78,7 +79,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - [ ] Search ranking among same-brand variants (needs `popularity`; currently tie → brand A–Z), rate limit (Upstash)
 - [x] `/medicine/[slug]` (cached, SEO metadata, alternatives + savings, warnings, real 404)
 - [ ] `/generic/[slug]` (generic links currently go to `/search?q=<generic>`)
-- [ ] Warnings + `/interactions`
+- [x] Warnings (medicine page) + `/interactions` checker (label-mined data)
+- [ ] Better interaction source (e.g. DDInter/DrugBank, license check) — current data misses pairs whose labels don't mention each other (e.g. warfarin + ciprofloxacin)
 - [ ] Auth.js, account, save/report (Server Actions)
 - [ ] `/scan` (Cloudinary signed upload → Gemini → match → alternatives + interactions)
 - [ ] Admin panel, rate limits, Lighthouse, deploy

@@ -1,26 +1,33 @@
 import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
 
+// Ingredient-level drug interaction (lib/ingredients.ts keys), mined from label text by
+// scripts/import/interactions.ts. Evidence is the verbatim label sentence(s) — we never invent severity.
+// A missing pair means "no information", never "safe".
+export const INTERACTION_SEVERITIES = ["warning", "caution"] as const; // warning = label says avoid/contraindicated
+
+const EvidenceSchema = new Schema(
+  {
+    genericName: { type: String, required: true }, // whose label the sentence comes from
+    genericSlug: { type: String, required: true },
+    text: { type: String, required: true },
+    via: String, // set when the label names a drug class ("anticoagulants"), not the drug itself
+  },
+  { _id: false }
+);
+
 const InteractionSchema = new Schema(
   {
-    genericA: { type: Schema.Types.ObjectId, ref: "Generic", required: true },
-    genericB: { type: Schema.Types.ObjectId, ref: "Generic", required: true },
-    severity: { type: String, enum: ["low", "moderate", "high"], required: true },
-    description: { type: String, required: true },
-    source: { type: String, required: true }, // every record must cite a reliable source
+    pairKey: { type: String, required: true, unique: true }, // "aspirin|warfarin" (sorted)
+    a: { type: String, required: true }, // ingredient key, a < b
+    b: { type: String, required: true },
+    aName: { type: String, required: true },
+    bName: { type: String, required: true },
+    severity: { type: String, enum: INTERACTION_SEVERITIES, required: true },
+    evidence: { type: [EvidenceSchema], default: [] },
+    source: { type: String, required: true }, // every record must cite its source
   },
   { timestamps: true }
 );
-
-InteractionSchema.index({ genericA: 1, genericB: 1 }, { unique: true });
-
-// Store the pair sorted so A-B and B-A resolve to the same record
-InteractionSchema.pre("validate", function () {
-  if (String(this.genericA) > String(this.genericB)) {
-    const a = this.genericA;
-    this.genericA = this.genericB;
-    this.genericB = a;
-  }
-});
 
 export type InteractionDoc = InferSchemaType<typeof InteractionSchema>;
 export const Interaction: Model<InteractionDoc> =
