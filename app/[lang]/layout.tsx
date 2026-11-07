@@ -6,6 +6,7 @@ import { hasLocale, locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import "../globals.css";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 const hind = Hind_Siliguri({
@@ -45,6 +46,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
   return (
     <html lang={lang} className={`${inter.variable} ${hind.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <Analytics />
         <StoreProvider>{children}</StoreProvider>
       </body>
     </html>

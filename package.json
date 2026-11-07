@@ -13,6 +13,7 @@
   "dependencies": {
     "@google/genai": "^3.0.0",
     "@reduxjs/toolkit": "^2.14.0",
+    "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.70.0",
     "mongoose": "^9.12.0",
