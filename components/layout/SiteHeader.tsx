@@ -32,12 +32,6 @@ export function SiteHeader({ lang, t }: Props) {
         </nav>
         <div className="flex items-center gap-2">
           <LanguageToggle lang={lang} label={t.langToggle.label} aria={t.langToggle.aria} />
-          <Link
-            href={href(lang, "/account")}
-            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-card transition"
-          >
-            {t.nav.login}
-          </Link>
         </div>
       </div>
     </header>

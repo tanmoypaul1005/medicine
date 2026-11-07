@@ -3,7 +3,7 @@ const bn = {
     title: "MedicineMate — ওষুধের দাম ও সস্তা বিকল্প",
     description: "বাংলাদেশের যেকোনো ওষুধের দাম, একই generic-এর সস্তা বিকল্প আর সতর্কতা এক জায়গায়।",
   },
-  nav: { conditions: "সাধারণ সমস্যা", medicines: "ওষুধের তালিকা", interactions: "Interaction checker", scan: "Prescription scan", login: "Login" },
+  nav: { conditions: "সাধারণ সমস্যা", medicines: "ওষুধের তালিকা", interactions: "Interaction checker", scan: "Prescription scan" },
   langToggle: { label: "English", aria: "Switch to English" },
   search: {
     placeholder: "ওষুধের নাম লিখুন — Napa, Paracetamol, নাপা…",
@@ -236,12 +236,6 @@ const bn = {
     missing: "কিছু ওষুধ পাওয়া যায়নি এবং বাদ দেওয়া হয়েছে।",
     method:
       "তথ্যসূত্র: medex.com.bd-এর prescribing information-এর interaction অংশ থেকে স্বয়ংক্রিয়ভাবে বের করা। সব interaction এখানে নাও থাকতে পারে।",
-  },
-  comingSoon: {
-    badge: "শীঘ্রই আসছে",
-    body: "এই ফিচারটি এখনো তৈরি হচ্ছে। ততক্ষণ ওষুধ খুঁজে দাম ও সস্তা বিকল্প দেখুন।",
-    home: "হোমে ফিরে যান",
-    browse: "ওষুধের তালিকা",
   },
   notFound: {
     title: "পেজটি পাওয়া যায়নি",

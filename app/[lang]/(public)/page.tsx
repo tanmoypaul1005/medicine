@@ -99,10 +99,9 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
 
       {/* Prescription scan CTA (directly under the hero, above the stats) */}
       <section className="mx-auto max-w-6xl px-4">
-        <Link
-          href={href(lang, "/scan")}
-          className="group flex flex-col items-start gap-4 rounded-2xl bg-brand p-6 text-white dark:text-slate-900 sm:flex-row sm:items-center sm:justify-between sm:p-8"
-        >
+        {/* Card is clickable everywhere via the button's stretched ::after; the button is the single,
+            real, keyboard-focusable control (visible focus ring on the brand background). */}
+        <div className="group relative flex flex-col items-start gap-4 rounded-2xl bg-brand p-6 text-white transition hover:brightness-105 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:text-slate-900">
           <div className="flex items-center gap-4">
             <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white/15">
               <Camera className="size-6" aria-hidden />
@@ -112,10 +111,13 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
               <p className="text-sm opacity-85">{h.scanBody}</p>
             </div>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold">
+          <Link
+            href={href(lang, "/scan")}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition after:absolute after:inset-0 after:rounded-2xl after:content-[''] hover:bg-slate-800 group-hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/80"
+          >
             {h.scanCta} <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden />
-          </span>
-        </Link>
+          </Link>
+        </div>
       </section>
 
       <StatsBar lang={lang} h={h} stats={data.stats} />

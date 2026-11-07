@@ -5,7 +5,7 @@ const en: Dictionary = {
     title: "MedicineMate — Medicine Prices & Cheaper Alternatives",
     description: "Prices, cheaper same-generic alternatives and warnings for any medicine in Bangladesh, in one place.",
   },
-  nav: { conditions: "Conditions", medicines: "All medicines", interactions: "Interaction checker", scan: "Prescription scan", login: "Login" },
+  nav: { conditions: "Conditions", medicines: "All medicines", interactions: "Interaction checker", scan: "Prescription scan" },
   langToggle: { label: "বাংলা", aria: "বাংলায় দেখুন" },
   search: {
     placeholder: "Type a medicine — Napa, Paracetamol, নাপা…",
@@ -238,12 +238,6 @@ const en: Dictionary = {
     missing: "Some medicines were not found and were skipped.",
     method:
       "Source: automatically extracted from the interaction section of medex.com.bd prescribing information. Not every interaction may be listed.",
-  },
-  comingSoon: {
-    badge: "Coming soon",
-    body: "This feature is still being built. Meanwhile, search a medicine to see its price and cheaper alternatives.",
-    home: "Back to home",
-    browse: "All medicines",
   },
   notFound: {
     title: "Page not found",
