@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Camera } from "lucide-react";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
@@ -30,6 +31,9 @@ export default async function ScanPage({ params }: PageProps<"/[lang]/scan">) {
       <p className="mt-2 text-muted">{t.subtitle}</p>
 
       <div className="mt-6">
+        {/* Suspense = instant navigation shell. Without it, dev "instant" validation fails on this client
+            component ("Could not validate instant…"). ScanFlow has no async data, so the fallback is never seen. */}
+        <Suspense fallback={<UploadBoxPlaceholder pick={t.pick} hint={t.pickHint} />}>
         <ScanFlow
           lang={lang}
           t={{
@@ -50,9 +54,23 @@ export default async function ScanPage({ params }: PageProps<"/[lang]/scan">) {
             errors: t.errors,
           }}
         />
+        </Suspense>
       </div>
 
       <Disclaimer text={dict.disclaimer} className="mt-8" />
     </section>
+  );
+}
+
+/** Static look-alike of ScanFlow's idle state (Suspense fallback). */
+function UploadBoxPlaceholder({ pick, hint }: { pick: string; hint: string }) {
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card px-6 py-12 text-center">
+      <span className="grid size-14 place-items-center rounded-2xl bg-brand-soft text-brand">
+        <Camera className="size-7" aria-hidden />
+      </span>
+      <span className="text-lg font-semibold">{pick}</span>
+      <span className="max-w-sm text-sm text-muted">{hint}</span>
+    </div>
   );
 }
