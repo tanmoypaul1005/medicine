@@ -2,6 +2,16 @@ import Link from "next/link";
 import {
   Activity,
   AlertTriangle,
+  Baby,
+  Bandage,
+  Droplet,
+  Flower,
+  Footprints,
+  Hand,
+  HeartPulse,
+  Mic,
+  ScanFace,
+  Sun,
   Brain,
   Bug,
   Bus,
@@ -50,6 +60,16 @@ const ICONS: Record<string, LucideIcon> = {
   bug: Bug,
   sparkles: Sparkles,
   worm: Worm,
+  mic: Mic,
+  bandage: Bandage,
+  "scan-face": ScanFace,
+  footprints: Footprints,
+  sun: Sun,
+  baby: Baby,
+  "heart-pulse": HeartPulse,
+  droplet: Droplet,
+  hand: Hand,
+  "flower-small": Flower,
 };
 
 export function ConditionIcon({ icon, className }: { icon: string; className?: string }) {
