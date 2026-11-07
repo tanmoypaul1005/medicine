@@ -121,6 +121,18 @@ const en: Dictionary = {
       storage: "Storage",
     },
   },
+  comingSoon: {
+    badge: "Coming soon",
+    body: "This feature is still being built. Meanwhile, search a medicine to see its price and cheaper alternatives.",
+    home: "Back to home",
+    browse: "All medicines",
+  },
+  notFound: {
+    title: "Page not found",
+    body: "The link is wrong or the page has moved. Try searching for a medicine below.",
+    home: "Back to home",
+    browse: "All medicines",
+  },
   disclaimer: "This is information only. Do not start, stop or switch medicines without a doctor's advice.",
   footer: "For information only, not medical advice.",
 };
