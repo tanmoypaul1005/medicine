@@ -126,7 +126,7 @@ const en: Dictionary = {
   scan: {
     title: "Prescription scan",
     subtitle: "Upload a photo of a prescription — see every medicine's price, cheaper alternatives and interaction warnings.",
-    privacy: "Photos are never stored. They are sent to Google Gemini only to read the medicine names.",
+    privacy: "Photos are never stored.",
     pick: "Take or upload a photo",
     pickHint: "Use a clear, well-lit, straight photo where the whole medicine list is visible.",
     reading: "Reading the prescription… (10–20 seconds)",

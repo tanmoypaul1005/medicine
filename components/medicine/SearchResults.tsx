@@ -14,7 +14,7 @@ const pageHref = (lang: Locale, q: string, page: number) =>
   href(lang, `/search?q=${encodeURIComponent(q)}${page > 1 ? `&page=${page}` : ""}`);
 
 export function SearchResults({ lang, t, q, data }: Props) {
-  const nf = new Intl.NumberFormat(lang === "bn" ? "bn-BD" : "en-US");
+  const nf = new Intl.NumberFormat("en-US");
   const { hits, total, page, pages } = data;
 
   if (total === 0) {

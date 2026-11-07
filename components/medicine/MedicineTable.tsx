@@ -65,7 +65,7 @@ export function MedicineFilters({ lang, t, query }: Omit<Props, "data">) {
 }
 
 export function MedicineTable({ lang, t, query, data }: Props) {
-  const nf = new Intl.NumberFormat(lang === "bn" ? "bn-BD" : "en-US");
+  const nf = new Intl.NumberFormat("en-US");
   const { rows, total, page, pages } = data;
 
   return (
