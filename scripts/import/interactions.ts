@@ -9,7 +9,7 @@ import { connectDB } from "@/lib/db";
 import { ingredientsOf, matchTerms, pairKey } from "@/lib/ingredients";
 import { Generic, Interaction } from "@/models";
 import { DRUG_CLASSES } from "./lib/drugClasses";
-import { htmlToText } from "./lib/transform";
+import { htmlSentences as sentences } from "./lib/transform";
 
 const DRY = process.argv.includes("--dry");
 const SOURCE = "medex.com.bd prescribing information (interaction section)";
@@ -23,14 +23,6 @@ const WARNING =
   /contraindicat|should not be (used|taken|given|co-?administered|combined)|must not|do not (use|take|co-?administer|combine)|\bavoid(ed|ance)?\b|not recommended|fatal|life[- ]threatening|serious|severe/i;
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-function sentences(html: string): string[] {
-  const text = htmlToText(html.replace(/<\/(li|p|h4|tr)>|<br\s*\/?>/gi, ". "));
-  return text
-    .split(/(?<=[.!?;])\s+(?=[A-Z(])/)
-    .map((s) => s.replace(/(\.\s*)+$/, ".").replace(/^\.\s*/, "").trim())
-    .filter((s) => s.length >= 15 && s.length <= 600);
-}
 
 type Evidence = { genericName: string; genericSlug: string; text: string; via?: string };
 type Acc = { a: string; b: string; aName: string; bName: string; severity: "warning" | "caution"; evidence: Evidence[] };

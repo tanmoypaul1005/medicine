@@ -8,7 +8,9 @@ import { SearchResults, SearchResultsSkeleton } from "@/components/medicine/Sear
 import { hasLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/getDictionary";
 import { fill } from "@/lib/utils";
+import { findConditions } from "@/server/services/condition.service";
 import { searchMedicines } from "@/server/services/search.service";
+import { ConditionChips } from "@/components/conditions/ConditionViews";
 import { firstParams } from "@/server/validators/medicine";
 import { searchPageQuery } from "@/server/validators/search";
 
@@ -57,7 +59,7 @@ async function SearchArea({ lang, t, searchParams }: { lang: Locale; t: Dictiona
         <div className="mt-8">
           <h2 className="mb-1 text-xl font-semibold">{fill(t.searchPage.resultsFor, { q })}</h2>
           <Suspense key={`${q}|${page}`} fallback={<SearchResultsSkeleton />}>
-            <Results lang={lang} t={t.searchPage} q={q} page={page} />
+            <Results lang={lang} t={t.searchPage} conditionsHeading={t.conditions.searchHeading} q={q} page={page} />
           </Suspense>
         </div>
       ) : (
@@ -67,8 +69,30 @@ async function SearchArea({ lang, t, searchParams }: { lang: Locale; t: Dictiona
   );
 }
 
-async function Results({ lang, t, q, page }: { lang: Locale; t: Dictionary["searchPage"]; q: string; page: number }) {
+async function Results({
+  lang,
+  t,
+  conditionsHeading,
+  q,
+  page,
+}: {
+  lang: Locale;
+  t: Dictionary["searchPage"];
+  conditionsHeading: string;
+  q: string;
+  page: number;
+}) {
   await connection(); // Mongoose uses new Date() internally → request-time only
-  const data = await searchMedicines(q, page);
-  return <SearchResults lang={lang} t={t} q={q} data={data} />;
+  const [data, conditions] = await Promise.all([searchMedicines(q, page), page === 1 ? findConditions(q) : []]);
+  return (
+    <>
+      {conditions.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-border bg-card p-4">
+          <p className="mb-3 text-sm font-medium text-muted">{conditionsHeading}</p>
+          <ConditionChips lang={lang} items={conditions} />
+        </div>
+      )}
+      <SearchResults lang={lang} t={t} q={q} data={data} />
+    </>
+  );
 }

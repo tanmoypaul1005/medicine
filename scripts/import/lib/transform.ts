@@ -62,7 +62,16 @@ export function htmlToText(html: string): string {
   return sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} }).replace(/\s+/g, " ").trim();
 }
 
-const PREG = /Pregnancy\s+Category\s*:?\s*([ABCDXN])\b/i;
+/** Label HTML → plain sentences (list items and line breaks become sentence ends). */
+export function htmlSentences(html: string): string[] {
+  const text = htmlToText(html.replace(/<\/(li|p|h4|tr)>|<br\s*\/?>/gi, ". "));
+  return text
+    .split(/(?<=[.!?;])\s+(?=[A-Z(])/)
+    .map((s) => s.replace(/(\.\s*)+$/, ".").replace(/^\.\s*/, "").trim())
+    .filter((s) => s.length >= 15 && s.length <= 600);
+}
+
+const PREG =/Pregnancy\s+Category\s*:?\s*([ABCDXN])\b/i;
 export function parsePregnancyCategory(html?: string): "A" | "B" | "C" | "D" | "X" | "N" | undefined {
   const m = html ? htmlToText(html).match(PREG) : null;
   return m ? (m[1].toUpperCase() as "A" | "B" | "C" | "D" | "X" | "N") : undefined;

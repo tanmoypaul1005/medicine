@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Camera, GitCompareArrows, ShieldCheck, Wallet } from "lucide-react";
+import { ConditionChips } from "@/components/conditions/ConditionViews";
 import { SearchBar } from "@/components/medicine/SearchBar";
+import { listConditions } from "@/server/services/condition.service";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { hasLocale, href } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
@@ -23,6 +25,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
   if (!hasLocale(lang)) notFound();
   const t = getDictionary(lang);
   const h = t.home;
+  const conditions = await listConditions(); // "use cache" → still prerendered
 
   const features: { icon: typeof Wallet; title: string; body: string; path?: string }[] = [
     { icon: Wallet, ...h.features.alternatives },
@@ -86,6 +89,22 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             {h.scanCta} <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden />
           </span>
         </Link>
+      </section>
+
+      {/* Common conditions */}
+      <section className="mx-auto max-w-6xl px-4 pt-14">
+        <div className="mb-4 flex items-baseline justify-between gap-4">
+          <h2 className="text-xl font-semibold">{t.conditions.homeTitle}</h2>
+          <Link href={href(lang, "/conditions")} className="text-sm font-medium text-brand hover:underline">
+            {t.conditions.seeAll}
+          </Link>
+        </div>
+        <ConditionChips
+          lang={lang}
+          items={conditions}
+          initial={8}
+          more={{ show: t.conditions.showMore, hide: t.conditions.showLess }}
+        />
       </section>
 
       {/* Popular medicines */}
