@@ -9,6 +9,7 @@ import { InteractionResults } from "@/components/interactions/InteractionResults
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { hasLocale, href, type Locale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/getDictionary";
+import { pageMeta } from "@/lib/seo";
 import { checkInteractions } from "@/server/services/interaction.service";
 import { interactionQuery, MAX_CHECK_ITEMS } from "@/server/validators/interaction";
 
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/interactio
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const t = getDictionary(lang).interactions;
-  return { title: t.title, description: t.subtitle };
+  return pageMeta(lang, "/interactions", { title: t.title, description: t.subtitle });
 }
 
 export default async function InteractionsPage({ params, searchParams }: PageProps<"/[lang]/interactions">) {

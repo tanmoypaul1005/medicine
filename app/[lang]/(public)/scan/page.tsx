@@ -6,12 +6,13 @@ import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { ScanFlow } from "@/components/scan/ScanFlow";
 import { hasLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { pageMeta } from "@/lib/seo";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/scan">): Promise<Metadata> {
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const t = getDictionary(lang).scan;
-  return { title: t.title, description: t.subtitle };
+  return pageMeta(lang, "/scan", { title: t.title, description: t.subtitle });
 }
 
 export default async function ScanPage({ params }: PageProps<"/[lang]/scan">) {

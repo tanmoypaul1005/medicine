@@ -4,13 +4,14 @@ import { ConditionGrid } from "@/components/conditions/ConditionViews";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { hasLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { pageMeta } from "@/lib/seo";
 import { listConditions } from "@/server/services/condition.service";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/conditions">): Promise<Metadata> {
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const t = getDictionary(lang).conditions;
-  return { title: t.title, description: t.subtitle };
+  return pageMeta(lang, "/conditions", { title: t.title, description: t.subtitle });
 }
 
 export default async function ConditionsPage({ params }: PageProps<"/[lang]/conditions">) {

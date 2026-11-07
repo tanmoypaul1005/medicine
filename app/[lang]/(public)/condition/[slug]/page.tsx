@@ -6,6 +6,8 @@ import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { hasLocale, href } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { localizedNotFound } from "@/lib/i18n/notFound";
+import { breadcrumbLd, JsonLd } from "@/components/seo/JsonLd";
+import { absoluteUrl, pageMeta } from "@/lib/seo";
 import { fill } from "@/lib/utils";
 import { getCondition, listConditions } from "@/server/services/condition.service";
 
@@ -24,11 +26,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const c = await getCondition(slug);
   if (!c) localizedNotFound(lang);
   const t = getDictionary(lang).conditions;
-  return {
+  return pageMeta(lang, `/condition/${slug}`, {
     title: fill(t.metaTitle, { name: conditionName(lang, c) }),
     description: lang === "bn" ? c.summaryBn : c.summaryEn,
-    alternates: { languages: { bn: `/bn/condition/${slug}`, en: `/en/condition/${slug}` } },
-  };
+  });
 }
 
 export default async function ConditionPage({ params }: { params: Params }) {
@@ -39,8 +40,31 @@ export default async function ConditionPage({ params }: { params: Params }) {
   const dict = getDictionary(lang);
   const t = dict.conditions;
 
+  const url = absoluteUrl(lang, `/condition/${c.slug}`);
+  const name = conditionName(lang, c);
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "MedicalWebPage",
+            "@id": url,
+            url,
+            name,
+            inLanguage: lang,
+            description: lang === "bn" ? c.summaryBn : c.summaryEn,
+            about: { "@type": "MedicalCondition", name: c.nameEn, alternateName: c.nameBn },
+            mentions: c.generics.map((g) => ({ "@type": "Drug", name: g.name })),
+          },
+          breadcrumbLd([
+            [dict.medicine.home, absoluteUrl(lang)],
+            [t.homeTitle, absoluteUrl(lang, "/conditions")],
+            [name, url],
+          ]),
+        ]}
+      />
       <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1 text-sm text-muted">
         <Link href={href(lang)} className="hover:text-foreground">
           {dict.medicine.home}

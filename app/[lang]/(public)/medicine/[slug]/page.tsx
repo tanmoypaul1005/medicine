@@ -4,12 +4,14 @@ import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { Alternatives, GenericInfo, MedicineHeader, Variants } from "@/components/medicine/MedicineDetailView";
-import { hasLocale, href } from "@/lib/i18n/config";
+import { breadcrumbLd, JsonLd } from "@/components/seo/JsonLd";
+import { hasLocale, href, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { localizedNotFound } from "@/lib/i18n/notFound";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, priceBasis } from "@/lib/format";
+import { absoluteUrl, pageMeta } from "@/lib/seo";
 import { fill } from "@/lib/utils";
-import { getMedicineDetail } from "@/server/services/medicineDetail.service";
+import { getMedicineDetail, type MedicineDetail } from "@/server/services/medicineDetail.service";
 
 type Params = PageProps<"/[lang]/medicine/[slug]">["params"];
 
@@ -20,18 +22,42 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!m) localizedNotFound(lang); // see lib/i18n/notFound.ts
   const t = getDictionary(lang).medicine;
   const name = [m.brand, m.strength, m.dosageForm].filter(Boolean).join(" ");
-  return {
+  const price = m.unitPrice != null ? `${formatPrice(lang, m.unitPrice)} ${priceBasis(m.priceLabel, t.perUnit)}` : t.noPrice;
+  return pageMeta(lang, `/medicine/${slug}`, {
     title: fill(t.metaTitle, { name }),
     description: fill(t.metaDesc, {
       name,
       generic: m.generic?.name ?? m.genericNameRaw ?? "",
       maker: m.manufacturerName ?? "",
-      price: m.unitPrice != null ? formatPrice(lang, m.unitPrice) : t.noPrice,
+      price,
     }),
-    alternates: {
-      canonical: `/${lang}/medicine/${slug}`,
-      languages: { bn: `/bn/medicine/${slug}`, en: `/en/medicine/${slug}` },
-    },
+  });
+}
+
+/** schema.org Drug — lets search engines understand brand, ingredient, maker, form and price. */
+function drugLd(lang: Locale, m: MedicineDetail) {
+  const url = absoluteUrl(lang, `/medicine/${m.slug}`);
+  const generic = m.generic?.name ?? m.genericNameRaw ?? undefined;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Drug",
+    "@id": url,
+    url,
+    name: [m.brand, m.strength].filter(Boolean).join(" "),
+    isProprietary: true,
+    ...(generic && { nonProprietaryName: generic, activeIngredient: generic }),
+    dosageForm: m.dosageForm,
+    ...(m.manufacturerName && { manufacturer: { "@type": "Organization", name: m.manufacturerName } }),
+    ...(m.generic?.drugClass && { drugClass: { "@type": "DrugClass", name: m.generic.drugClass } }),
+    ...(m.generic?.pregnancyCategory && { pregnancyCategory: `https://schema.org/FDAcategory${m.generic.pregnancyCategory}` }),
+    ...(m.unitPrice != null && {
+      offers: {
+        "@type": "Offer",
+        price: m.unitPrice,
+        priceCurrency: "BDT",
+        ...(m.priceLabel && { description: m.priceLabel }),
+      },
+    }),
   };
 }
 
@@ -64,6 +90,16 @@ async function Detail({ params }: { params: Params }) {
 
   return (
     <>
+      <JsonLd
+        data={[
+          drugLd(lang, m),
+          breadcrumbLd([
+            [t.home, absoluteUrl(lang)],
+            [t.list, absoluteUrl(lang, "/medicines")],
+            [[m.brand, m.strength].filter(Boolean).join(" "), absoluteUrl(lang, `/medicine/${m.slug}`)],
+          ]),
+        ]}
+      />
       <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1 text-sm text-muted">
         <Link href={href(lang)} className="hover:text-foreground">
           {t.home}

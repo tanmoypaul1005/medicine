@@ -9,6 +9,16 @@ import { getHomeData } from "@/server/services/home.service";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { hasLocale, href } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { absoluteUrl, pageMeta, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/JsonLd";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!hasLocale(lang)) return {};
+  const t = getDictionary(lang).meta;
+  return pageMeta(lang, "", { title: t.title, description: t.description, absoluteTitle: true });
+}
 
 const EXAMPLES = ["napa 500", "paracetamol", "নাপা", "seclo"];
 
@@ -26,8 +36,32 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
     { icon: ShieldCheck, ...h.features.warnings },
   ];
 
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: absoluteUrl(lang),
+      inLanguage: lang,
+      description: t.meta.description,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: `${absoluteUrl(lang, "/search")}?q={search_term_string}` },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    { "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      inLanguage: lang,
+      mainEntity: h.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    },
+  ];
+
   return (
     <>
+      <JsonLd data={jsonLd} />
       {/* Hero */}
       {/* z-10 + no overflow-hidden here: the search suggestion dropdown must overflow this section.
           Only the decorative glow is clipped, by its own wrapper. */}

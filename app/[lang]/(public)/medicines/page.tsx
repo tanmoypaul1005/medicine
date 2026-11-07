@@ -6,6 +6,7 @@ import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { MedicineFilters, MedicineTable, MedicineTableSkeleton } from "@/components/medicine/MedicineTable";
 import { hasLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { pageMeta } from "@/lib/seo";
 import { listMedicines } from "@/server/services/medicine.service";
 import { firstParams, medicineListQuery } from "@/server/validators/medicine";
 
@@ -13,7 +14,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/medicines"
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const t = getDictionary(lang).medicines;
-  return { title: t.title, description: t.subtitle };
+  return pageMeta(lang, "/medicines", { title: t.title, description: t.subtitle });
 }
 
 export default async function MedicinesPage({ params, searchParams }: PageProps<"/[lang]/medicines">) {
