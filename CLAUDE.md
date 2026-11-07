@@ -18,6 +18,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - `app/[lang]/(public)/` public pages (`page.tsx` = home); `app/api/*/route.ts` Route Handlers
 - `components/medicine/` SearchBar, Disclaimer, MedicineTable (filters/table/pagination/skeleton, server-only render)…; `components/layout/` SiteHeader/Footer
 - Search: `server/services/search.service.ts` (`parseQuery` "napa 500"→text+strength; Bangla via `lib/search/bnTranslit.ts` + spelling variants k/c, j/g/z, ks/x, inherent "o"; Atlas `$search` index `medicine_search` (def in `models/Medicine.ts`, create with `npm run db:search-index`); regex fallback on error/0 hits; SearchLog on 0 hits). Shared client/server types in `lib/search/types.ts`. API: `/api/autocomplete?q=`, `/api/search?q=&page=`. Page `/[lang]/search` (noindex). Regression: `npm run test:search` (dev server must run; cases in `tests/search-cases.json`; add a case for every search fix).
+- Medicine detail `/[lang]/medicine/[slug]`: `getMedicineDetail` (`server/services/medicineDetail.service.ts`, `"use cache"` + `cacheLife("hours")` + `cacheTag("medicine:<slug>")`) → header/price/packs, alternatives (same genericId+strength+formSlug, cheapest 15, savings only when same price basis), brand variants, generic sections (`components/medicine/MedicineDetailView.tsx`, HTML in `.med-html` styles in globals.css). `generateStaticParams` prerenders a few popular slugs; page awaits params + data outside Suspense so unknown slug = real 404.
 - Pages: `/[lang]/medicines` (table: `q`, `type`, `sort`, `page` GET params → `medicineListQuery` → `listMedicines` in `server/services/medicine.service.ts`, 50/page)
 - `models/` Mongoose models, all exported from `models/index.ts`
 - `server/services/` all DB logic; `server/actions/` Server Actions; `server/validators/` Zod
@@ -41,6 +42,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - Never `re.test()` with a `/g` regex in loops/filters (stateful `lastIndex` → skips matches).
 - Dev HMR after adding a new export can SSR-fail once ("Element type is invalid… undefined", page shows `$RX` client fallback) → just reload.
 - Mongoose calls `new Date()` internally → any uncached DB read in a page/component needs `await connection()` (from `next/server`) first, even after awaiting `searchParams`. Keep it in the page, not the service (services may be used under `"use cache"`).
+- `notFound()` inside `<Suspense>` (or under `loading.tsx`) = soft 404 (HTTP 200). For real 404 on dynamic `[slug]`: add `generateStaticParams` + await params/`"use cache"` data at page top level, no Suspense.
 - Pages reading `searchParams`/DB: put that part in an async child inside `<Suspense>` (pattern: `app/[lang]/(public)/medicines/page.tsx`). Services import `"server-only"`.
 - eslint `react-hooks/refs`: no `ref.current` in render → `useState(makeStore)` in StoreProvider.
 - RTK Query hooks (`useXQuery`) read `Date.now()` in render → any client component using them must render inside `<Suspense>` with a static fallback (pattern: `components/medicine/SearchBar.tsx`).
@@ -71,7 +73,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - [x] `/medicines` browse table (regex filter for now)
 - [x] Atlas Search index + `/api/search`, `/api/autocomplete`, `/search` page, Bangla search (22/22 cases)
 - [ ] Search ranking among same-brand variants (needs `popularity`; currently tie → brand A–Z), rate limit (Upstash)
-- [ ] `/medicine/[slug]`, `/generic/[slug]` (ISR, SEO metadata, alternatives)
+- [x] `/medicine/[slug]` (cached, SEO metadata, alternatives + savings, warnings, real 404)
+- [ ] `/generic/[slug]` (generic links currently go to `/search?q=<generic>`)
 - [ ] Warnings + `/interactions`
 - [ ] Auth.js, account, save/report (Server Actions)
 - [ ] `/scan` (Cloudinary signed upload → Gemini → match → alternatives + interactions)
