@@ -30,6 +30,7 @@ const MedicineSchema = new Schema(
     manufacturerId: { type: Schema.Types.ObjectId, ref: "Manufacturer", index: true },
     manufacturerName: { type: String, trim: true }, // denormalized for Atlas Search
     unitPrice: { type: Number, min: 0 }, // per unit, else cheapest pack; null = unavailable
+    priceLabel: { type: String, default: null }, // what unitPrice is for: null = per unit, else pack label ("5 gm tube")
     packs: { type: [PackSchema], default: [] },
     priceText: String, // raw source string, for audits
     priceVerifiedAt: Date,

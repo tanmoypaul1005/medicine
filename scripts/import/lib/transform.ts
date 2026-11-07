@@ -3,7 +3,8 @@ import { slugify } from "@/lib/utils";
 
 // ---------- Price ----------
 export type Pack = { label: string; price: number; qty?: number; qtyPrice?: number };
-export type ParsedPrice = { unitPrice: number | null; packs: Pack[] };
+/** priceLabel = what unitPrice is for: null → per unit (tablet/capsule…), else the pack ("5 gm tube"). */
+export type ParsedPrice = { unitPrice: number | null; priceLabel: string | null; packs: Pack[] };
 
 const NUM = String.raw`(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)`; // "2,950.00" | "5.98"
 // Either "(30's pack: ৳ 97.50)" or "<label>: ৳ <price>" (label never starts with a pack group)
@@ -33,8 +34,10 @@ export function parsePrice(text: string): ParsedPrice {
     }
   }
   const unit = packs.find((p) => p.label === "unit");
-  const unitPrice = unit ? unit.price : packs.length ? Math.min(...packs.map((p) => p.price)) : null;
-  return { unitPrice, packs };
+  if (unit) return { unitPrice: unit.price, priceLabel: null, packs };
+  if (!packs.length) return { unitPrice: null, priceLabel: null, packs };
+  const cheapest = packs.reduce((a, b) => (b.price < a.price ? b : a));
+  return { unitPrice: cheapest.price, priceLabel: cheapest.label, packs };
 }
 
 // ---------- HTML monograph sections ----------

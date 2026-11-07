@@ -49,7 +49,7 @@ const priceLabelOf = (packs: { label: string; price: number }[] | undefined | nu
 export async function getMedicineDetail(slug: string): Promise<MedicineDetail | null> {
   "use cache";
   cacheLife("hours");
-  cacheTag(`medicine:${slug}`);
+  cacheTag("medicines", `medicine:${slug}`);
 
   await connectDB();
   const m = await Medicine.findOne({ slug })

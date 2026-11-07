@@ -7,6 +7,7 @@ import mongoose, { type Model, type Types } from "mongoose";
 import { connectDB } from "@/lib/db";
 import { slugify } from "@/lib/utils";
 import { Generic, GENERIC_SECTIONS, Manufacturer, Medicine, MEDICINE_TYPES, type GenericSection } from "@/models";
+import { revalidateTags } from "../lib/revalidate";
 import { loadCsv } from "./lib/csv";
 import { assignSlugs, cleanHtml, key, parsePregnancyCategory, parsePrice } from "./lib/transform";
 
@@ -69,7 +70,7 @@ function buildMedicines(genericIds: Map<string, Types.ObjectId | null>, mfrIds: 
 
   const docs = rows.map(({ sourceId, r }) => {
     const priceText = r["package container"];
-    const { unitPrice, packs } = parsePrice(priceText);
+    const { unitPrice, priceLabel, packs } = parsePrice(priceText);
     if (packs.some((p) => p.label === "unit")) stats.unit++;
     else if (packs.length) stats.packOnly++;
     else stats.noPrice++;
@@ -92,6 +93,7 @@ function buildMedicines(genericIds: Map<string, Types.ObjectId | null>, mfrIds: 
       manufacturerId: mfrIds.get(key(r.manufacturer)) ?? null,
       manufacturerName: r.manufacturer || undefined,
       unitPrice,
+      priceLabel,
       packs,
       priceText: priceText || undefined,
     };
@@ -200,6 +202,7 @@ async function main() {
   await upsertAll(Medicine, docs, "medicines");
   await updateCounts();
   log(`Import done in ${((Date.now() - t0) / 1000).toFixed(1)}s. Run "npm run db:verify".`);
+  await revalidateTags(["medicines", "conditions"]);
 }
 
 main()

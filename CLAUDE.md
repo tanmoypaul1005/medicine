@@ -29,8 +29,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - `store/` `medicineApi.ts` (RTK Query, baseUrl `/api`), `store.ts` (`makeStore`), `StoreProvider.tsx`
 - `lib/db.ts` cached `connectDB()`; `lib/utils.ts` `cn`, `slugify`; `hooks/useDebounce.ts`
 - `data/raw/*.csv` (git-ignored source dump), `data/ANALYSIS.md`
-- `scripts/import/` (run via `tsx`, uses `@/models` + `@/lib/db`): `lib/csv.ts` (parser), `lib/transform.ts` (parsePrice, cleanHtml via sanitize-html, slugs), `run.ts`, `verify.ts`, `analyze.ts`
-- npm: `db:import:dry` (parse+validate, no DB), `db:import` (upsert by sourceId, never deletes, ~70s), `db:verify`, `db:analyze -- <csv>`
+- `scripts/import/` (run via `tsx`, uses `@/models` + `@/lib/db`): `lib/csv.ts` (parser), `lib/transform.ts` (parsePrice, cleanHtml via sanitize-html, slugs), `run.ts`, `verify.ts`
+- npm: `db:import:dry` (parse+validate, no DB), `db:import` (upsert by sourceId, never deletes, ~70s), `db:verify`
 
 ## Rules
 - Route Handlers / Server Actions: validate with Zod → call `server/services/` → return `{ data, error }`. No direct DB queries in routes.

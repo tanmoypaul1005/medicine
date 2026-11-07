@@ -1,6 +1,6 @@
 # CSV Analysis (source: medex.com.bd dump, 6 files in `data/raw/`)
 
-Re-run: `npm run db:analyze -- <file>` (stats), `npm run db:import:dry` (joins, price parse, validation)
+Re-check: `npm run db:import:dry` (joins, price parse, validation)
 
 | File | Rows | Use |
 |---|---|---|
