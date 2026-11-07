@@ -13,7 +13,8 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         disallow: ["/api/", "/bn/search", "/en/search", "/bn/scan/result", "/en/scan/result"],
       },
     ],
-    sitemap: ids.map((id) => `${SITE_URL}/sitemap/${id}.xml`),
+    // Index first (the URL to submit), then the parts for crawlers that ignore indexes
+    sitemap: [`${SITE_URL}/sitemap.xml`, ...ids.map((id) => `${SITE_URL}/sitemap/${id}.xml`)],
     host: SITE_URL,
   };
 }

@@ -33,11 +33,21 @@ export function alternatesFor(lang: Locale, path = ""): NonNullable<Metadata["al
  */
 export const OG_IMAGE = { url: "/og-image.png", width: 1200, height: 630, alt: SITE_NAME, type: "image/png" };
 
+/**
+ * Google Search Console "HTML tag" verification code from env GOOGLE_SITE_VERIFICATION_KEY.
+ * Accepts just the code or the whole tag Google shows (`<meta name="google-site-verification" content="…" />`).
+ */
+export const GOOGLE_SITE_VERIFICATION = (() => {
+  const raw = process.env.GOOGLE_SITE_VERIFICATION_KEY?.trim();
+  if (!raw) return undefined;
+  return (raw.match(/content=["']([^"']+)["']/)?.[1] ?? raw).trim() || undefined;
+})();
+
 export const absoluteUrl =(lang: Locale, path = "") => `${SITE_URL}/${lang}${path}`;
 
 /**
- * Full metadata for an indexable page: title, description, canonical, hreflang, Open Graph, Twitter.
- * Open Graph images come from app/[lang]/opengraph-image.tsx automatically.
+ * Full metadata for an indexable page: title, description, canonical, hreflang, Open Graph, Twitter
+ * (share image = OG_IMAGE).
  */
 export function pageMeta(
   lang: Locale,
