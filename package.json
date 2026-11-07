@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:analyze": "tsx scripts/import/analyze.ts",
+    "db:import": "tsx --env-file=.env scripts/import/run.ts",
+    "db:import:dry": "tsx scripts/import/run.ts --dry",
+    "db:verify": "tsx --env-file=.env scripts/import/verify.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.14.0",
@@ -25,9 +29,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.2",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
+    "sanitize-html": "^2.18.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

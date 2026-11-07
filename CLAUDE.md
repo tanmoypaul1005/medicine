@@ -21,7 +21,10 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - `server/services/` all DB logic; `server/actions/` Server Actions; `server/validators/` Zod
 - `store/` `medicineApi.ts` (RTK Query, baseUrl `/api`), `store.ts` (`makeStore`), `StoreProvider.tsx`
 - `lib/db.ts` cached `connectDB()`; `lib/utils.ts` `cn`, `slugify`; `hooks/useDebounce.ts`
-- Planned: `scripts/import/` (CSV→Mongo), `data/raw/` (git-ignored CSVs), `tests/search-cases.json`
+- `data/raw/*.csv` (git-ignored source dump), `data/ANALYSIS.md`
+- `scripts/import/` (run via `tsx`, uses `@/models` + `@/lib/db`): `lib/csv.ts` (parser), `lib/transform.ts` (parsePrice, cleanHtml via sanitize-html, slugs), `run.ts`, `verify.ts`, `analyze.ts`
+- npm: `db:import:dry` (parse+validate, no DB), `db:import` (upsert by sourceId, never deletes, ~70s), `db:verify`, `db:analyze -- <csv>`
+- Planned: `tests/search-cases.json`
 
 ## Rules
 - Route Handlers / Server Actions: validate with Zod → call `server/services/` → return `{ data, error }`. No direct DB queries in routes.
@@ -38,12 +41,15 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - RTK Query hooks (`useXQuery`) read `Date.now()` in render → any client component using them must render inside `<Suspense>` with a static fallback (pattern: `components/medicine/SearchBar.tsx`).
 - Stale dev cache (old HTML after moves/renames): stop dev server, delete `.next`, restart, Ctrl+Shift+R. Don't run `next build` while dev is running.
 - Redux `combineReducers` calls `Math.random()` → build `rootReducer` at module level in `store/store.ts` (never inside `makeStore`). Add new slices there.
+- Scripts needing DB: `tsx --env-file=.env` (Next doesn't load `.env` outside the app). Mongoose 9: use `await doc.validate()`, not deprecated `validateSync()`.
 - Shell: PowerShell 5.1 primary; bash heredocs unreliable here, so use the Write tool for files.
 - User usually runs `npm run dev` on :3000 already; don't start a second server, just hit `http://localhost:3000`.
 
 ## Data model (key points)
-- Generic (warnings, indications, sideEffects, pregnancyCategory) ← Medicine `genericId`. Warnings live on Generic, not brand.
-- Medicine: brand, slug(unique), aliases[], genericName/manufacturerName (denormalized for `$search`), strength "500 mg", form enum, unitPrice, priceVerifiedAt, popularity, sourceId(unique sparse). Index `{genericId,strength,form,unitPrice}`.
+- Source: medex.com.bd CSV dump, see `data/ANALYSIS.md`. All 3 core models have `sourceId` (CSV id) for idempotent upserts.
+- Generic: name, slug, aliases[], drugClass, pregnancyCategory?, `sections.{indication,dosage,interaction,contraindications,sideEffects,pregnancyLactation,precautions,…}` (sanitized HTML, `GENERIC_SECTIONS`), monographUrl, brandCount. Warnings live on Generic, not brand. Render sections only via sanitized HTML.
+- Medicine: brand, slug (own `slugify(brand strength form)`, `-<sourceId>` on clash), aliases[], type allopathic|herbal, genericId+genericName, manufacturerId+manufacturerName (denormalized for `$search`), strength?, dosageForm (exact string) + formSlug, unitPrice (per unit else cheapest pack; null = unavailable), packs[{label,price,qty?,qtyPrice?}], priceText. Index `{genericId,strength,formSlug,unitPrice}`.
+- No DosageForm/DrugClass/Indication collections; indication data never used for browsing (no symptom→medicine).
 - Interaction: pair stored sorted (pre-validate), unique `{genericA,genericB}`, `source` required; missing pair = "তথ্য নেই", never "safe".
 - Others: Manufacturer, User(role), Prescription, Report, SearchLog. Models are provisional until the CSV analysis.
 
@@ -55,7 +61,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - [x] Mongoose connection + 8 models + `/api/health`
 - [x] Homepage UI (search bar w/ autocomplete UI, scan CTA, popular list static, features, disclaimer)
 - [x] bn/en i18n (URL-based, header toggle); homepage, header, footer translated
-- [ ] Kaggle CSV → `data/ANALYSIS.md` → finalize models → `scripts/import` (`db:import`, `db:import:dry`, `db:verify`)
+- [x] CSV → `data/ANALYSIS.md` → finalize Generic/Medicine/Manufacturer models
+- [x] `scripts/import` + data imported to Atlas (240 mfr, 1,711 generics, 21,714 medicines; verify passes)
 - [ ] Atlas Search index + `/api/search`, `/api/autocomplete` (query parse "napa 500"; SearchLog on zero results)
 - [ ] `/medicine/[slug]`, `/generic/[slug]` (ISR, SEO metadata, alternatives)
 - [ ] Warnings + `/interactions`

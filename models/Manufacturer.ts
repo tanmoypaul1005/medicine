@@ -5,6 +5,7 @@ const ManufacturerSchema = new Schema(
     sourceId: { type: String, unique: true, sparse: true },
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true },
+    brandCount: { type: Number, default: 0 }, // filled by importer
   },
   { timestamps: true }
 );
