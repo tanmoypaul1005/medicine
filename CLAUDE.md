@@ -3,7 +3,7 @@
 > Read this first. Keep it short and current: after any task that changes structure, conventions, models, APIs, env vars or status, update the relevant section (and tick Status). No long prose; facts only.
 
 ## What
-Bangladesh medicine helper web app: search any medicine (brand/generic/Bangla/typo), see price, cheaper alternatives (same generic+strength+form), warnings, drug interactions, prescription scan (Gemini Vision OCR). Info only, never medical advice; every medicine/alt/interaction/scan page shows `<Disclaimer />`. No symptom→medicine feature.
+Bangladesh medicine helper web app: search any medicine (brand/generic/Bangla/typo), see price, cheaper alternatives (same generic+strength+form), warnings, drug interactions, prescription scan (Gemini Vision OCR). Info only, never medical advice; every medicine/alt/interaction/scan/condition page shows `<Disclaimer />`. Symptom→medicine ONLY via the curated conditions guide (`docs/conditions-feature.md`): OTC allow-list per condition, label evidence required, red flags first, no dosing; never antibiotics/steroids/sedatives/controlled/Rx-only.
 
 ## Stack
 Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict, Tailwind 4 (tokens in `app/globals.css`), lucide-react, RTK Query, Zod, Mongoose → MongoDB Atlas (db `medicinecheck`). Planned: Atlas Search, Auth.js, Cloudinary, Gemini, Upstash Redis, Vercel. No Shadcn yet (plain Tailwind + `cn()`).
@@ -20,6 +20,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - Search: `server/services/search.service.ts` (`parseQuery` "napa 500"→text+strength; Bangla via `lib/search/bnTranslit.ts` + spelling variants k/c, j/g/z, ks/x, inherent "o"; Atlas `$search` index `medicine_search` (def in `models/Medicine.ts`, create with `npm run db:search-index`); regex fallback on error/0 hits; SearchLog on 0 hits). Shared client/server types in `lib/search/types.ts`. API: `/api/autocomplete?q=`, `/api/search?q=&page=`. Page `/[lang]/search` (noindex). Regression: `npm run test:search` (dev server must run; cases in `tests/search-cases.json`; add a case for every search fix).
 - Medicine detail `/[lang]/medicine/[slug]`: `getMedicineDetail` (`server/services/medicineDetail.service.ts`, `"use cache"` + `cacheLife("hours")` + `cacheTag("medicine:<slug>")`) → header/price/packs, alternatives (same genericId+strength+formSlug, cheapest 15, savings only when same price basis), brand variants, generic sections (`components/medicine/MedicineDetailView.tsx`, HTML in `.med-html` styles in globals.css). `generateStaticParams` prerenders a few popular slugs; page awaits params + data outside Suspense so unknown slug = real 404.
 - Interaction checker `/[lang]/interactions?m=slug1,slug2` (max 8): `checkInteractions` (`server/services/interaction.service.ts`) → per medicine pair: duplicate (same ingredient) > warning > caution > none. UI: `components/interactions/InteractionPicker.tsx` (client, URL state) + `InteractionResults.tsx` (server). API `GET /api/interactions?m=`.
+- Conditions guide: `Condition` model ← `npm run db:conditions[:dry]` (`scripts/import/conditions.ts` + catalog `scripts/import/lib/conditionCatalog.ts`: names, aliases, red flags, label `terms`, OTC `allow` keys, `forms`). Generic qualifies only if ALL ingredients allowed + indication sentence matches + a brand in allowed form exists. `ALWAYS_EXCLUDED_FORMS` in `lib/conditions.ts`. Service `server/services/condition.service.ts` (`listConditions`/`getCondition` "use cache" tag `conditions`, `findConditions` whole-word alias match). Pages `/[lang]/conditions`, `/[lang]/condition/[slug]` (all prerendered); home chips (8 + native `<details>` "see more"); search page shows matching conditions. UI `components/conditions/ConditionViews.tsx`. 30 conditions, `reviewed:false` until clinician review.
+- Cache refresh after scripts write DB: `scripts/lib/revalidate.ts` → `POST /api/revalidate` (`x-revalidate-secret`, tags). `revalidateTag(tag,"max")` = stale-while-revalidate: first request may still be old.
 - Unbuilt features linked in header (`/scan`, `/account`) render `components/layout/ComingSoon.tsx` (200, noindex); replace when implementing.
 - Pages: `/[lang]/medicines` (table: `q`, `type`, `sort`, `page` GET params → `medicineListQuery` → `listMedicines` in `server/services/medicine.service.ts`, 50/page)
 - `models/` Mongoose models, all exported from `models/index.ts`
@@ -65,7 +67,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - Others: Manufacturer, User(role), Prescription, Report, SearchLog. Models are provisional until the CSV analysis.
 
 ## Env (`.env`)
-`MONGODB_URI`, `MONGODB_DNS_SERVERS`. Planned: `GEMINI_API_KEY`, `CLOUDINARY_*`, `AUTH_*`, `UPSTASH_*`.
+`MONGODB_URI`, `MONGODB_DNS_SERVERS`, `REVALIDATE_SECRET` (scripts → `/api/revalidate`), optional `APP_URL` (default `http://localhost:3000`). Planned: `GEMINI_API_KEY`, `CLOUDINARY_*`, `AUTH_*`, `UPSTASH_*`.
 
 ## Status
 - [x] Project setup, deps, folder structure
@@ -80,6 +82,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - [x] `/medicine/[slug]` (cached, SEO metadata, alternatives + savings, warnings, real 404)
 - [ ] `/generic/[slug]` (generic links currently go to `/search?q=<generic>`)
 - [x] Warnings (medicine page) + `/interactions` checker (label-mined data)
+- [x] Common conditions guide (30 conditions, OTC-only, label evidence) — [ ] clinician review of red flags + allow-lists before launch
 - [ ] Better interaction source (e.g. DDInter/DrugBank, license check) — current data misses pairs whose labels don't mention each other (e.g. warfarin + ciprofloxacin)
 - [ ] Auth.js, account, save/report (Server Actions)
 - [ ] `/scan` (Cloudinary signed upload → Gemini → match → alternatives + interactions)

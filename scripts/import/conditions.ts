@@ -11,6 +11,7 @@ import { ingredientsOf } from "@/lib/ingredients";
 import { Condition, Generic, Medicine } from "@/models";
 import { ALWAYS_EXCLUDED_FORMS, CONDITION_CATALOG } from "./lib/conditionCatalog";
 import { htmlSentences } from "./lib/transform";
+import { revalidateTags } from "../lib/revalidate";
 
 const DRY = process.argv.includes("--dry");
 
@@ -71,6 +72,7 @@ async function main() {
   }
   const removed = await Condition.deleteMany({ slug: { $nin: docs.map((d) => d.slug) } });
   console.log(`Upserted ${docs.length} conditions, removed ${removed.deletedCount} in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+  await revalidateTags(["conditions"]);
 }
 
 main()
