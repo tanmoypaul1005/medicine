@@ -34,6 +34,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
+// Blocking on purpose: params + cached data are awaited outside <Suspense> so an unknown slug
+// returns a real 404 (inside Suspense it would stream a soft 404 with HTTP 200). Data is "use cache" → fast.
+export const instant = false;
+
 // Prerender the most-viewed pages at build; every other slug renders on first request, then is cached.
 export async function generateStaticParams() {
   return ["napa-500-mg-tablet", "seclo-20-mg-capsule-delayed-release", "fexo-120-mg-tablet"].map((slug) => ({ slug }));
