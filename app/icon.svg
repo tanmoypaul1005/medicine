@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- MedicineMate favicon: pill (lucide "pill") on brand teal, same as the header logo -->
+  <rect width="64" height="64" rx="14" fill="#0f766e"/>
+  <g transform="translate(12 12) scale(1.6667)" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/>
+    <path d="m8.5 8.5 7 7"/>
+  </g>
+</svg>
