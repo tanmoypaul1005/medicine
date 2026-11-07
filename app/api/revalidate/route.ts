@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
 // POST /api/revalidate  { tags: ["conditions"] }  header x-revalidate-secret: $REVALIDATE_SECRET
-// Called by data scripts (scripts/lib/revalidate.ts) after DB writes so "use cache" data refreshes.
+// Call after editing data in MongoDB so cached pages refresh (tags: "medicines", "conditions", "home").
 const body = z.object({ tags: z.array(z.string().regex(/^[a-z0-9:_-]{1,80}$/)).min(1).max(50) });
 
 function authorized(req: NextRequest): boolean {

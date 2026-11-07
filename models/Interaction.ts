@@ -1,7 +1,7 @@
 import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
 
-// Ingredient-level drug interaction (lib/ingredients.ts keys), mined from label text by
-// scripts/import/interactions.ts. Evidence is the verbatim label sentence(s) — we never invent severity.
+// Ingredient-level drug interaction (lib/ingredients.ts keys), originally mined from label text
+// (data now lives in MongoDB). Evidence is the verbatim label sentence(s) — we never invent severity.
 // A missing pair means "no information", never "safe".
 export const INTERACTION_SEVERITIES = ["warning", "caution"] as const; // warning = label says avoid/contraindicated
 

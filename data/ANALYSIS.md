@@ -1,6 +1,6 @@
 # CSV Analysis (source: medex.com.bd dump, 6 files in `data/raw/`)
 
-Re-check: `npm run db:import:dry` (joins, price parse, validation)
+> Historical: this analysis was used for the one-time import. The import scripts were removed; MongoDB is now the source of truth.
 
 | File | Rows | Use |
 |---|---|---|

@@ -7,14 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:import": "tsx --env-file=.env scripts/import/run.ts",
-    "db:import:dry": "tsx scripts/import/run.ts --dry",
-    "db:verify": "tsx --env-file=.env scripts/import/verify.ts",
-    "db:search-index": "tsx --env-file=.env scripts/import/search-index.ts",
-    "db:interactions": "tsx --env-file=.env scripts/import/interactions.ts",
-    "db:interactions:dry": "tsx --env-file=.env scripts/import/interactions.ts --dry",
-    "db:conditions": "tsx --env-file=.env scripts/import/conditions.ts",
-    "db:conditions:dry": "tsx --env-file=.env scripts/import/conditions.ts --dry",
+    "db:search-index": "tsx --env-file=.env scripts/search-index.ts",
     "test:search": "tsx scripts/test-search.ts"
   },
   "dependencies": {
@@ -36,10 +29,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/sanitize-html": "^2.16.2",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
-    "sanitize-html": "^2.18.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"

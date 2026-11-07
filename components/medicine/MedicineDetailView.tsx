@@ -274,7 +274,8 @@ function Section({ title, html, open, tone }: { title: string; html: string; ope
         {title}
         <ChevronDown className="size-4 shrink-0 text-muted transition group-open:rotate-180" aria-hidden />
       </summary>
-      {/* HTML sanitized to an allowlist at import (scripts/import/lib/transform.ts → cleanHtml) */}
+      {/* Stored HTML was sanitized to an allowlist when imported. If you edit sections in the DB, keep to
+          p/br/ul/ol/li/strong/em/sub/sup/table tags — this is rendered as raw HTML. */}
       <div className="med-html border-t border-border px-4 py-3 text-sm" dangerouslySetInnerHTML={{ __html: html }} />
     </details>
   );

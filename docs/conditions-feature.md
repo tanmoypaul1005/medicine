@@ -33,13 +33,11 @@
 | `aliases[]` | জ্বর, jor, fever, pyrexia (সার্চের জন্য) |
 | `summaryBn` / `summaryEn` | ছোট বর্ণনা |
 | `redFlagsBn[]` / `redFlagsEn[]` | "3 দিনের বেশি জ্বর থাকলে…" |
-| `generics[]` | `{ genericId, name, slug, evidence }` — স্ক্রিপ্ট দিয়ে তৈরি |
+| `generics[]` | `{ genericId, name, slug, evidence }` — শুধু OTC, লেবেলের প্রমাণ সহ |
+| `formPattern` | কোন ধরন দেখাবে (regex), যেমন `cream|ointment|gel` |
 | `reviewed` | `false` — ডাক্তার/ফার্মাসিস্ট যাচাই করলে `true` |
 
-**তৈরির পদ্ধতি** (`npm run db:conditions`):
-1. `scripts/import/lib/conditionCatalog.ts` — রোগের তালিকা, নাম, বিপদ-সংকেত, লেবেলে খোঁজার শব্দ, অনুমোদিত উপাদান, অনুমোদিত ধরন।
-2. প্রতিটি generic-এর indication অংশ পড়ে মিল খোঁজা → যার **সব উপাদান অনুমোদিত** এবং **লেবেলে রোগের উল্লেখ আছে**, শুধু সেগুলো যোগ হবে।
-3. Brand ও দাম runtime-এ `medicines` collection থেকে আসবে (সবচেয়ে সস্তা আগে)।
+**ডেটা কোথায়:** সব তথ্য সরাসরি MongoDB-র `conditions` collection-এ (প্রথমবার স্ক্রিপ্ট দিয়ে তৈরি হয়েছিল, সেই স্ক্রিপ্ট এখন মুছে ফেলা হয়েছে)। Brand ও দাম runtime-এ `medicines` collection থেকে আসে (সবচেয়ে সস্তা আগে)।
 
 ## 4. পেজ ও UI
 
@@ -53,17 +51,16 @@
 ## 5. ফাইল
 
 - `models/Condition.ts`
-- `scripts/import/lib/conditionCatalog.ts`, `scripts/import/conditions.ts`
 - `server/services/condition.service.ts`
 - `app/[lang]/(public)/conditions/page.tsx`, `app/[lang]/(public)/condition/[slug]/page.tsx`
 - `components/conditions/*`
 - সার্চ ও হোমপেজে সংযোগ, দুই ভাষার dictionary, `CLAUDE.md`
 
-## 6. নতুন রোগ যোগ করার নিয়ম
+## 6. নতুন রোগ যোগ বা পরিবর্তনের নিয়ম
 
-1. `scripts/import/lib/conditionCatalog.ts`-এ নতুন entry যোগ করুন (শুধু OTC উপাদান)।
-2. `npm run db:conditions:dry` — প্রতিটি রোগে কোন generic আসছে দেখে নিন।
-3. `npm run db:conditions` — ডাটাবেসে লেখে এবং ক্যাশ রিফ্রেশ করে (`.env`-এ `REVALIDATE_SECRET` লাগবে)।
+1. MongoDB-র `conditions` collection-এ সরাসরি document যোগ/পরিবর্তন করুন (উপরের ফিল্ড অনুযায়ী)।
+2. `generics[]`-এ শুধু OTC ওষুধ, যার লেবেলে ঐ রোগের উল্লেখ আছে — antibiotic, steroid, ঘুমের ওষুধ কখনো নয়।
+3. ক্যাশ রিফ্রেশ: `POST /api/revalidate` (header `x-revalidate-secret`, body `{"tags":["conditions"]}`) — না করলে কয়েক ঘণ্টা পরে নিজে থেকে আপডেট হবে।
 
 ## 7. লঞ্চের আগে যা বাকি
 

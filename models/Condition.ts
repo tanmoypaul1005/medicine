@@ -1,7 +1,8 @@
 import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
 
 // Common, mild condition → label-listed OTC generics (docs/conditions-feature.md).
-// Seeded/mined by `npm run db:conditions` from scripts/import/lib/conditionCatalog.ts. Never hand-edit generics[].
+// Data lives in MongoDB and is edited there directly (the original seeding script was removed).
+// Keep generics[] to OTC ingredients with label evidence (see docs/conditions-feature.md).
 const ConditionGenericSchema = new Schema(
   {
     genericId: { type: Schema.Types.ObjectId, ref: "Generic", required: true },
