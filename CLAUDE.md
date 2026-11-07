@@ -72,7 +72,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - Others: Manufacturer, User(role), Prescription, Report, SearchLog. Models are provisional until the CSV analysis.
 
 ## Env (`.env`)
-`MONGODB_URI`, `MONGODB_DNS_SERVERS`, `REVALIDATE_SECRET` (for `POST /api/revalidate`), `SITE_URL` (public origin for canonical/sitemap/OG; default `http://localhost:3000` — MUST be set in production), `GEMINI_API_KEY`, optional `GEMINI_MODEL`. Planned: `AUTH_*`, `UPSTASH_*`. (Cloudinary dropped: scan images aren't stored.)
+`MONGODB_URI`, `MONGODB_DNS_SERVERS`, `REVALIDATE_SECRET` (for `POST /api/revalidate`), `SITE_URL` (public origin for canonical/sitemap/OG; set it for a custom domain — else falls back to Vercel's `VERCEL_PROJECT_PRODUCTION_URL`/`VERCEL_URL`, then localhost; a localhost og:image = no WhatsApp/Facebook preview), `GEMINI_API_KEY`, optional `GEMINI_MODEL`. Planned: `AUTH_*`, `UPSTASH_*`. (Cloudinary dropped: scan images aren't stored.)
 
 ## Status
 - [x] Project setup, deps, folder structure

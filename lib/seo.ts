@@ -1,9 +1,20 @@
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n/config";
 
-// Public site origin for absolute URLs (sitemap, canonical, Open Graph, JSON-LD).
-// Set SITE_URL in production (e.g. https://medicinemate.com.bd). Not secret, server-only use.
-export const SITE_URL = (process.env.SITE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+/**
+ * Public site origin for absolute URLs (sitemap, canonical, Open Graph, JSON-LD).
+ * Order: SITE_URL (set this for a custom domain) → Vercel production domain → Vercel deployment URL
+ * → localhost (dev only). Never let production fall back to localhost: share previews (WhatsApp,
+ * Facebook) download og:image from this origin and show nothing if it's unreachable.
+ */
+function resolveSiteUrl(): string {
+  const env = process.env;
+  if (env.SITE_URL) return env.SITE_URL;
+  if (env.VERCEL_ENV === "production" && env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  if (env.VERCEL_URL) return `https://${env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
+export const SITE_URL = resolveSiteUrl().replace(/\/+$/, "");
 export const SITE_NAME = "MedicineMate";
 
 const OG_LOCALE: Record<Locale, string> = { bn: "bn_BD", en: "en_US" };
@@ -16,7 +27,13 @@ export function alternatesFor(lang: Locale, path = ""): NonNullable<Metadata["al
   };
 }
 
-export const absoluteUrl = (lang: Locale, path = "") => `${SITE_URL}/${lang}${path}`;
+/**
+ * Share image for every page (WhatsApp, Facebook, X, LinkedIn): public/og-image.png, 1200x630, <300KB.
+ * Source screenshot: public/ogImage.png (resized/cropped). Replace og-image.png to change it.
+ */
+export const OG_IMAGE = { url: "/og-image.png", width: 1200, height: 630, alt: SITE_NAME, type: "image/png" };
+
+export const absoluteUrl =(lang: Locale, path = "") => `${SITE_URL}/${lang}${path}`;
 
 /**
  * Full metadata for an indexable page: title, description, canonical, hreflang, Open Graph, Twitter.
@@ -28,8 +45,7 @@ export function pageMeta(
   { title, description, absoluteTitle = false }: { title: string; description: string; absoluteTitle?: boolean }
 ): Metadata {
   const fullTitle = absoluteTitle ? title : `${title} | ${SITE_NAME}`;
-  // A page-level openGraph object replaces the file-based image, so reference it explicitly.
-  const image = { url: `/${lang}/opengraph-image`, width: 1200, height: 630, alt: SITE_NAME };
+  const image = OG_IMAGE;
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
