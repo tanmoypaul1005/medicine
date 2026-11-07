@@ -136,7 +136,7 @@ function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className
         <ul
           id={listId}
           role="listbox"
-          className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-card shadow-xl"
+          className="absolute inset-x-0 z-30 mt-2 max-h-[min(28rem,60vh)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-card text-left shadow-xl"
         >
           {suggestions.map((m, i) => (
             <li
