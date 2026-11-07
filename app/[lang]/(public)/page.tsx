@@ -2,21 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Camera, GitCompareArrows, ShieldCheck, Wallet } from "lucide-react";
 import { ConditionChips } from "@/components/conditions/ConditionViews";
+import { Faq, HowItWorks, InteractionTeaser, PopularGrid, SavingsShowcase, StatsBar } from "@/components/home/HomeSections";
 import { SearchBar } from "@/components/medicine/SearchBar";
 import { listConditions } from "@/server/services/condition.service";
+import { getHomeData } from "@/server/services/home.service";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { hasLocale, href } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
-
-// Static placeholder until popularity data is imported (no prices shown here on purpose)
-const POPULAR = [
-  { slug: "napa-500-mg-tablet", brand: "Napa", strength: "500 mg", generic: "Paracetamol" },
-  { slug: "seclo-20-mg-capsule", brand: "Seclo", strength: "20 mg", generic: "Omeprazole" },
-  { slug: "fexo-120-mg-tablet", brand: "Fexo", strength: "120 mg", generic: "Fexofenadine" },
-  { slug: "monas-10-mg-tablet", brand: "Monas", strength: "10 mg", generic: "Montelukast" },
-  { slug: "sergel-20-mg-capsule", brand: "Sergel", strength: "20 mg", generic: "Esomeprazole" },
-  { slug: "alatrol-10-mg-tablet", brand: "Alatrol", strength: "10 mg", generic: "Cetirizine" },
-];
 
 const EXAMPLES = ["napa 500", "paracetamol", "নাপা", "seclo"];
 
@@ -25,7 +17,8 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
   if (!hasLocale(lang)) notFound();
   const t = getDictionary(lang);
   const h = t.home;
-  const conditions = await listConditions(); // "use cache" → still prerendered
+  // Both "use cache" → page stays prerendered; refreshed by the "medicines"/"conditions" cache tags
+  const [conditions, data] = await Promise.all([listConditions(), getHomeData()]);
 
   const features: { icon: typeof Wallet; title: string; body: string; path?: string }[] = [
     { icon: Wallet, ...h.features.alternatives },
@@ -70,7 +63,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         </div>
       </section>
 
-      {/* Prescription scan CTA */}
+      {/* Prescription scan CTA (directly under the hero, above the stats) */}
       <section className="mx-auto max-w-6xl px-4">
         <Link
           href={href(lang, "/scan")}
@@ -91,6 +84,9 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         </Link>
       </section>
 
+      <StatsBar lang={lang} h={h} stats={data.stats} />
+      <SavingsShowcase lang={lang} h={h} items={data.savings} />
+
       {/* Common conditions */}
       <section className="mx-auto max-w-6xl px-4 pt-14">
         <div className="mb-4 flex items-baseline justify-between gap-4">
@@ -107,27 +103,12 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         />
       </section>
 
-      {/* Popular medicines */}
-      <section className="mx-auto max-w-6xl px-4 pt-14">
-        <h2 className="mb-4 text-xl font-semibold">{h.popular}</h2>
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {POPULAR.map((m) => (
-            <li key={m.slug}>
-              <Link
-                href={href(lang, `/medicine/${m.slug}`)}
-                className="block h-full rounded-xl border border-border bg-card p-4 hover:border-brand hover:shadow-md transition"
-              >
-                <p className="font-semibold">{m.brand}</p>
-                <p className="text-sm text-muted">{m.strength}</p>
-                <p className="mt-2 truncate text-xs text-muted">{m.generic}</p>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <PopularGrid lang={lang} h={h} items={data.popular} />
+      <InteractionTeaser lang={lang} h={h} />
+      <HowItWorks lang={lang} h={h} />
 
       {/* Features */}
-      <section className="mx-auto max-w-6xl px-4 pt-14 pb-12">
+      <section className="mx-auto max-w-6xl px-4 pt-14">
         <div className="grid gap-4 sm:grid-cols-3">
           {features.map(({ icon: Icon, title, body, path }) => {
             const inner = (
@@ -151,8 +132,12 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             );
           })}
         </div>
+      </section>
 
-        <Disclaimer text={t.disclaimer} className="mt-10" />
+      <Faq h={h} />
+
+      <section className="mx-auto max-w-6xl px-4 pt-10 pb-12">
+        <Disclaimer text={t.disclaimer} />
       </section>
     </>
   );
