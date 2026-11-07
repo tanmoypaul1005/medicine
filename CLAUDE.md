@@ -35,6 +35,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - `cacheComponents` ON: no `export const dynamic/revalidate` in routes; no `new Date()`/`Math.random()` during render of prerendered pages (use `"use cache"`, client component, or `await connection()`).
 - Windows + Node 24: Atlas SRV lookup fails (`querySrv ECONNREFUSED`). Fixed via `.env` `MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1` (read in `lib/db.ts`).
 - eslint `react-hooks/refs`: no `ref.current` in render → `useState(makeStore)` in StoreProvider.
+- RTK Query hooks (`useXQuery`) read `Date.now()` in render → any client component using them must render inside `<Suspense>` with a static fallback (pattern: `components/medicine/SearchBar.tsx`).
+- Stale dev cache (old HTML after moves/renames): stop dev server, delete `.next`, restart, Ctrl+Shift+R. Don't run `next build` while dev is running.
 - Redux `combineReducers` calls `Math.random()` → build `rootReducer` at module level in `store/store.ts` (never inside `makeStore`). Add new slices there.
 - Shell: PowerShell 5.1 primary; bash heredocs unreliable here, so use the Write tool for files.
 - User usually runs `npm run dev` on :3000 already; don't start a second server, just hit `http://localhost:3000`.
