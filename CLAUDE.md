@@ -40,7 +40,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 ## Gotchas (already hit)
 - `cacheComponents` ON: no `export const dynamic/revalidate` in routes; no `new Date()`/`Math.random()` during render of prerendered pages (use `"use cache"`, client component, or `await connection()`).
 - Windows + Node 24: Atlas SRV lookup fails (`querySrv ECONNREFUSED`). Fixed via `.env` `MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1`, applied inside `connectDB()` (module-level call didn't reach page renders).
-- Prices: always `formatPrice(lang, n)` from `lib/format.ts` (bn "১২ টাকা", en "৳12"). Never "৳" + Bangla digits: ৳ looks like ৮ in Bangla fonts ("৳১২" reads as 812).
+- Counts in UI text: `formatNumber(lang, n)` (never `String(n)` → English digits in Bangla text). Prices: always `formatPrice(lang, n)` from `lib/format.ts` (bn "১২ টাকা", en "৳12"). Never "৳" + Bangla digits: ৳ looks like ৮ in Bangla fonts ("৳১২" reads as 812).
 - Never `re.test()` with a `/g` regex in loops/filters (stateful `lastIndex` → skips matches).
 - Dev HMR after adding a new export can SSR-fail once ("Element type is invalid… undefined", page shows `$RX` client fallback) → just reload.
 - Mongoose calls `new Date()` internally → any uncached DB read in a page/component needs `await connection()` (from `next/server`) first, even after awaiting `searchParams`. Keep it in the page, not the service (services may be used under `"use cache"`).

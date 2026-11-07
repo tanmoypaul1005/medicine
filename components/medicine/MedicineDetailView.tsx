@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AlertTriangle, BadgePercent, ChevronDown, ExternalLink, Factory, FlaskConical, Info, Pill } from "lucide-react";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
-import { formatPrice } from "@/lib/format";
+import { formatNumber, formatPrice } from "@/lib/format";
 import { cn, fill } from "@/lib/utils";
 import type { GenericSection } from "@/models/Generic";
 import type { MedicineDetail } from "@/server/services/medicineDetail.service";
@@ -87,7 +87,9 @@ export function MedicineHeader({ lang, t, m }: Props) {
             <ul className="mt-2 space-y-1 text-sm">
               {m.packs.map((p, i) => (
                 <li key={i} className="flex justify-between gap-4">
-                  <span className="text-muted">{p.qty ? fill(t.pack, { n: String(p.qty) }) : p.label === "unit" ? t.perUnit : p.label}</span>
+                  <span className="text-muted">
+                    {p.qty ? fill(t.pack, { n: formatNumber(lang, p.qty) }) : p.label === "unit" ? t.perUnit : p.label}
+                  </span>
                   <span className="font-medium">{fmt(p.qtyPrice ?? p.price)}</span>
                 </li>
               ))}
