@@ -3,8 +3,13 @@ import mongoose from "mongoose";
 
 // Node on some Windows networks can't resolve Atlas SRV records via the router's DNS
 // (querySrv ECONNREFUSED). Set e.g. MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1 to override.
-if (process.env.MONGODB_DNS_SERVERS) {
-  dns.setServers(process.env.MONGODB_DNS_SERVERS.split(",").map((s) => s.trim()));
+// Applied inside connectDB (not at module top): page renders under Turbopack didn't get the
+// module-level call before the first connect, while route handlers did.
+function applyDnsOverride() {
+  const servers = process.env.MONGODB_DNS_SERVERS?.split(",").map((s) => s.trim()).filter(Boolean);
+  if (!servers?.length) return;
+  dns.setServers(servers);
+  dns.promises.setServers(servers);
 }
 
 type Cache = { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null };
@@ -21,6 +26,7 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!uri) throw new Error("MONGODB_URI is not set");
 
   if (!cached.promise) {
+    applyDnsOverride();
     cached.promise = mongoose.connect(uri, { bufferCommands: false, maxPoolSize: 10 });
   }
   try {

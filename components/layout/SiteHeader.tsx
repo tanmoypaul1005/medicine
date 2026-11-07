@@ -8,6 +8,7 @@ type Props = { lang: Locale; t: Dictionary };
 
 export function SiteHeader({ lang, t }: Props) {
   const nav = [
+    { path: "/medicines", label: t.nav.medicines },
     { path: "/interactions", label: t.nav.interactions },
     { path: "/scan", label: t.nav.scan },
   ];

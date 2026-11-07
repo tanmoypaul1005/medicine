@@ -16,7 +16,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 
 ## Structure
 - `app/[lang]/(public)/` public pages (`page.tsx` = home); `app/api/*/route.ts` Route Handlers
-- `components/medicine/` SearchBar, Disclaimer…; `components/layout/` SiteHeader/Footer
+- `components/medicine/` SearchBar, Disclaimer, MedicineTable (filters/table/pagination/skeleton, server-only render)…; `components/layout/` SiteHeader/Footer
+- Pages: `/[lang]/medicines` (table: `q`, `type`, `sort`, `page` GET params → `medicineListQuery` → `listMedicines` in `server/services/medicine.service.ts`, 50/page)
 - `models/` Mongoose models, all exported from `models/index.ts`
 - `server/services/` all DB logic; `server/actions/` Server Actions; `server/validators/` Zod
 - `store/` `medicineApi.ts` (RTK Query, baseUrl `/api`), `store.ts` (`makeStore`), `StoreProvider.tsx`
@@ -36,7 +37,8 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 
 ## Gotchas (already hit)
 - `cacheComponents` ON: no `export const dynamic/revalidate` in routes; no `new Date()`/`Math.random()` during render of prerendered pages (use `"use cache"`, client component, or `await connection()`).
-- Windows + Node 24: Atlas SRV lookup fails (`querySrv ECONNREFUSED`). Fixed via `.env` `MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1` (read in `lib/db.ts`).
+- Windows + Node 24: Atlas SRV lookup fails (`querySrv ECONNREFUSED`). Fixed via `.env` `MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1`, applied inside `connectDB()` (module-level call didn't reach page renders).
+- Pages reading `searchParams`/DB: put that part in an async child inside `<Suspense>` (pattern: `app/[lang]/(public)/medicines/page.tsx`). Services import `"server-only"`.
 - eslint `react-hooks/refs`: no `ref.current` in render → `useState(makeStore)` in StoreProvider.
 - RTK Query hooks (`useXQuery`) read `Date.now()` in render → any client component using them must render inside `<Suspense>` with a static fallback (pattern: `components/medicine/SearchBar.tsx`).
 - Stale dev cache (old HTML after moves/renames): stop dev server, delete `.next`, restart, Ctrl+Shift+R. Don't run `next build` while dev is running.
@@ -63,6 +65,7 @@ Next.js 16.4 (App Router, Turbopack, `cacheComponents` ON), React 19, TS strict,
 - [x] bn/en i18n (URL-based, header toggle); homepage, header, footer translated
 - [x] CSV → `data/ANALYSIS.md` → finalize Generic/Medicine/Manufacturer models
 - [x] `scripts/import` + data imported to Atlas (240 mfr, 1,711 generics, 21,714 medicines; verify passes)
+- [x] `/medicines` browse table (regex filter for now)
 - [ ] Atlas Search index + `/api/search`, `/api/autocomplete` (query parse "napa 500"; SearchLog on zero results)
 - [ ] `/medicine/[slug]`, `/generic/[slug]` (ISR, SEO metadata, alternatives)
 - [ ] Warnings + `/interactions`
