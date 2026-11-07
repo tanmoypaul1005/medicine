@@ -11,7 +11,8 @@
     "db:import": "tsx --env-file=.env scripts/import/run.ts",
     "db:import:dry": "tsx scripts/import/run.ts --dry",
     "db:verify": "tsx --env-file=.env scripts/import/verify.ts",
-    "db:search-index": "tsx --env-file=.env scripts/import/search-index.ts"
+    "db:search-index": "tsx --env-file=.env scripts/import/search-index.ts",
+    "test:search": "tsx scripts/test-search.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.14.0",
