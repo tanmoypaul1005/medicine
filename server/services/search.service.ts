@@ -5,17 +5,9 @@ import { bnToLatin, hasBangla } from "@/lib/search/bnTranslit";
 import { Medicine, MEDICINE_SEARCH_INDEX, SearchLog, type MedicineDoc } from "@/models";
 import { AUTOCOMPLETE_LIMIT, SEARCH_PAGE_SIZE } from "@/server/validators/search";
 
-export type MedicineHit = {
-  slug: string;
-  brand: string;
-  type: "allopathic" | "herbal";
-  strength?: string;
-  dosageForm: string;
-  genericName?: string;
-  manufacturerName?: string;
-  unitPrice?: number | null;
-};
-export type SearchResult = { hits: MedicineHit[]; total: number; page: number; pages: number; engine: "atlas" | "regex" };
+import type { MedicineHit, SearchResult } from "@/lib/search/types";
+
+export type { MedicineHit, SearchResult };
 
 /** variants: extra spellings for Bangla input (ক → k|c, e.g. "seklo" + "seclo"). */
 export type ParsedQuery = { original: string; text: string; variants: string[]; strength?: string; bangla: boolean };
@@ -27,9 +19,18 @@ const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Latin spellings a transliterated Bangla word may correspond to: ফেক্সো "fekso" → fexo, fecso… (max 10) */
 function spellingVariants(bases: string[], text: string): string[] {
-  const rules: [RegExp, string][] = [[/ks/g, "x"], [/k/g, "c"], [/j/g, "g"], [/sh/g, "s"], [/f/g, "ph"]];
+  const rules: [RegExp, string][] = [
+    [/ks/g, "x"],
+    [/k/g, "c"],
+    [/s(?=[ie])/g, "c"], // soft c: সিটা → cita (paracetamol)
+    [/j/g, "g"],
+    [/j/g, "z"], // প্রাজল → prazol (omeprazole)
+    [/sh/g, "s"],
+    [/f/g, "ph"],
+  ];
   let out = bases;
-  for (const [re, to] of rules) out = [...out, ...out.filter((v) => re.test(v)).map((v) => v.replace(re, to))];
+  // (no re.test here: /g regexes keep lastIndex between calls and silently skip matches)
+  for (const [re, to] of rules) out = [...out, ...out.map((v) => v.replace(re, to))];
   return [...new Set(out)].filter((v) => v && v !== text).slice(0, 10);
 }
 
@@ -69,7 +70,7 @@ function searchStage(p: ParsedQuery, extra: Record<string, unknown> = {}): Pipel
       { text: { path: "brand", query: v, score: boost(8) } },
       { text: { path: "brand", query: v, fuzzy: { maxEdits: 1, prefixLength: 0 }, score: boost(4) } },
       { autocomplete: { path: "brand", query: v, score: boost(5) } },
-      { text: { path: "genericName", query: v, score: boost(2) } },
+      { text: { path: "genericName", query: v, fuzzy: { maxEdits: v.length >= 8 ? 2 : 1, prefixLength: 1 }, score: boost(2) } },
     ]),
   ];
   const compound: Record<string, unknown> = { must: [{ compound: { should: textClauses, minimumShouldMatch: 1 } }] };

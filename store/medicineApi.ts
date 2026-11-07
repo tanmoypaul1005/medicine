@@ -1,14 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type { MedicineHit, SearchResult } from "@/lib/search/types";
 
-export type MedicineSummary = {
-  slug: string;
-  brand: string;
-  genericName?: string;
-  strength?: string;
-  form?: string;
-  manufacturerName?: string;
-  unitPrice?: number;
-};
+export type { MedicineHit, SearchResult };
 
 type ApiResponse<T> = { data: T; error: string | null };
 
@@ -18,13 +11,13 @@ export const medicineApi = createApi({
   tagTypes: ["Medicine"],
   keepUnusedDataFor: 300,
   endpoints: (build) => ({
-    autocomplete: build.query<MedicineSummary[], string>({
+    autocomplete: build.query<MedicineHit[], string>({
       query: (q) => ({ url: "autocomplete", params: { q } }),
-      transformResponse: (res: ApiResponse<MedicineSummary[]>) => res.data,
+      transformResponse: (res: ApiResponse<MedicineHit[]>) => res.data,
     }),
-    search: build.query<MedicineSummary[], string>({
-      query: (q) => ({ url: "search", params: { q } }),
-      transformResponse: (res: ApiResponse<MedicineSummary[]>) => res.data,
+    search: build.query<SearchResult, { q: string; page?: number }>({
+      query: ({ q, page = 1 }) => ({ url: "search", params: { q, page } }),
+      transformResponse: (res: ApiResponse<SearchResult>) => res.data,
       providesTags: ["Medicine"],
     }),
   }),

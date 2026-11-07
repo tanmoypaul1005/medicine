@@ -2,14 +2,12 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
-import { cn } from "@/lib/utils";
+import { cn, fill } from "@/lib/utils";
 import type { MedicineList } from "@/server/services/medicine.service";
 import { MEDICINE_SORTS, type MedicineListQuery } from "@/server/validators/medicine";
 
 type T = Dictionary["medicines"];
 type Props = { lang: Locale; t: T; query: MedicineListQuery; data: MedicineList };
-
-const fill = (s: string, vars: Record<string, string>) => s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
 
 function pageHref(lang: Locale, query: MedicineListQuery, page: number) {
   const p = new URLSearchParams();
@@ -74,7 +72,7 @@ export function MedicineTable({ lang, t, query, data }: Props) {
         <p className="rounded-xl border border-border bg-card p-8 text-center text-muted">{t.empty}</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-160 text-left text-sm">
             <thead className="border-b border-border bg-brand-soft/40 text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-4 py-3 font-semibold">{t.cols.brand}</th>
@@ -131,7 +129,7 @@ export function MedicineTable({ lang, t, query, data }: Props) {
   );
 }
 
-function PageLink({ href: to, disabled, children }: { href: string; disabled: boolean; children: React.ReactNode }) {
+export function PageLink({ href: to, disabled, children }: { href: string; disabled: boolean; children: React.ReactNode }) {
   const cls = "inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-2 font-medium";
   return disabled ? (
     <span className={cn(cls, "opacity-40")} aria-disabled>

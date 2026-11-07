@@ -10,7 +10,8 @@ import { href, type Locale } from "@/lib/i18n/config";
 
 type Props = {
   lang: Locale;
-  t: { placeholder: string; aria: string; submit: string };
+  t: { placeholder: string; aria: string; submit: string; seeAll: string; noMatch: string };
+  defaultValue?: string;
   autoFocus?: boolean;
   className?: string;
 };
@@ -33,12 +34,19 @@ export function SearchBar(props: Props) {
   );
 }
 
-function StaticSearchForm({ lang, t, className }: Props) {
+function StaticSearchForm({ lang, t, defaultValue, className }: Props) {
   return (
     <form action={href(lang, "/search")} role="search" className={cn("relative w-full", className)}>
       <div className={FRAME}>
         <Search className="ml-2 size-5 shrink-0 text-muted" aria-hidden />
-        <input type="search" name="q" placeholder={t.placeholder} aria-label={t.aria} className={INPUT} />
+        <input
+          type="search"
+          name="q"
+          defaultValue={defaultValue}
+          placeholder={t.placeholder}
+          aria-label={t.aria}
+          className={INPUT}
+        />
         <button type="submit" className={BUTTON}>
           {t.submit}
         </button>
@@ -47,16 +55,17 @@ function StaticSearchForm({ lang, t, className }: Props) {
   );
 }
 
-function InteractiveSearchBar({ lang, t, autoFocus, className }: Props) {
+function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className }: Props) {
   const router = useRouter();
   const listId = useId();
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
 
   const term = useDebounce(q.trim(), 250);
-  const { data: suggestions = [], isFetching } = useAutocompleteQuery(term, { skip: term.length < 2 });
+  const { data: suggestions = [], isFetching, isSuccess } = useAutocompleteQuery(term, { skip: term.length < 2 });
   const showList = open && term.length >= 2 && suggestions.length > 0;
+  const showEmpty = open && term.length >= 2 && isSuccess && !isFetching && suggestions.length === 0;
 
   const go = (query: string) => {
     if (!query.trim()) return;
@@ -134,13 +143,27 @@ function InteractiveSearchBar({ lang, t, autoFocus, className }: Props) {
             >
               <span className="min-w-0">
                 <span className="font-semibold">{m.brand}</span>{" "}
-                <span className="text-sm text-muted">{m.strength}</span>
+                <span className="text-sm text-muted">{[m.strength, m.dosageForm].filter(Boolean).join(" · ")}</span>
                 <span className="block truncate text-sm text-muted">{m.genericName}</span>
               </span>
               {m.unitPrice != null && <span className="shrink-0 text-sm font-medium">৳{m.unitPrice}</span>}
             </li>
           ))}
+          <li
+            role="option"
+            aria-selected={false}
+            onMouseDown={() => go(q)}
+            className="cursor-pointer border-t border-border px-4 py-2.5 text-sm font-medium text-brand hover:bg-brand-soft/60"
+          >
+            {t.seeAll} “{q.trim()}” →
+          </li>
         </ul>
+      )}
+
+      {showEmpty && (
+        <p className="absolute z-20 mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-left text-sm text-muted shadow-xl">
+          {t.noMatch}
+        </p>
       )}
     </form>
   );
