@@ -4,7 +4,7 @@ import { Suspense, useId, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, X } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
-import { formatNumber, formatPrice } from "@/lib/format";
+import { formatNumber, formatPrice, priceBasis } from "@/lib/format";
 import { href, type Locale } from "@/lib/i18n/config";
 import { cn, fill } from "@/lib/utils";
 import { useAutocompleteQuery } from "@/store/medicineApi";
@@ -16,6 +16,7 @@ type T = {
   remove: string;
   clear: string;
   max: string;
+  perUnit: string;
 };
 type Props = { lang: Locale; t: T; selected: PickedItem[]; max: number };
 
@@ -163,7 +164,12 @@ function Picker({ lang, t, selected, max }: Props) {
                   <span className="text-sm text-muted">{[m.strength, m.dosageForm].filter(Boolean).join(" · ")}</span>
                   <span className="block truncate text-sm text-muted">{m.genericName}</span>
                 </span>
-                {m.unitPrice != null && <span className="shrink-0 text-sm text-muted">{formatPrice(lang, m.unitPrice)}</span>}
+                {m.unitPrice != null && (
+                  <span className="shrink-0 text-right text-sm text-muted">
+                    {formatPrice(lang, m.unitPrice)}
+                    <span className="block text-xs">{priceBasis(m.priceLabel, t.perUnit)}</span>
+                  </span>
+                )}
               </li>
             ))}
           </ul>

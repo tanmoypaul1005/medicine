@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { Search, Loader2 } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAutocompleteQuery } from "@/store/medicineApi";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, priceBasis } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { href, type Locale } from "@/lib/i18n/config";
 
 type Props = {
   lang: Locale;
-  t: { placeholder: string; aria: string; submit: string; seeAll: string; noMatch: string };
+  t: { placeholder: string; aria: string; submit: string; seeAll: string; noMatch: string; perUnit: string };
   defaultValue?: string;
   autoFocus?: boolean;
   className?: string;
@@ -156,7 +156,10 @@ function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className
                 <span className="block truncate text-sm text-muted">{m.genericName}</span>
               </span>
               {m.unitPrice != null && (
-                <span className="shrink-0 text-sm font-medium">{formatPrice(lang, m.unitPrice)}</span>
+                <span className="shrink-0 text-right text-sm font-medium">
+                  {formatPrice(lang, m.unitPrice)}
+                  <span className="block text-xs font-normal text-muted">{priceBasis(m.priceLabel, t.perUnit)}</span>
+                </span>
               )}
             </li>
           ))}

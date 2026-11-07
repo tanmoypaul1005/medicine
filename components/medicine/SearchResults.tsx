@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, SearchX } from "lucide-react";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
 import type { SearchResult } from "@/lib/search/types";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, priceBasis } from "@/lib/format";
 import { fill } from "@/lib/utils";
 import { PageLink } from "./MedicineTable";
 
@@ -61,7 +61,7 @@ export function SearchResults({ lang, t, q, data }: Props) {
                 {m.unitPrice != null ? (
                   <>
                     <p className="font-semibold">{formatPrice(lang, m.unitPrice)}</p>
-                    <p className="text-xs text-muted">{t.perUnit}</p>
+                    <p className="text-xs text-muted">{priceBasis(m.priceLabel, t.perUnit)}</p>
                   </>
                 ) : (
                   <p className="text-xs text-muted">{t.noPrice}</p>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, priceBasis } from "@/lib/format";
 import { cn, fill } from "@/lib/utils";
 import type { MedicineList } from "@/server/services/medicine.service";
 import { MEDICINE_SORTS, type MedicineListQuery } from "@/server/validators/medicine";
@@ -109,7 +109,14 @@ export function MedicineTable({ lang, t, query, data }: Props) {
                     {m.manufacturerName ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-right font-medium whitespace-nowrap">
-                    {m.unitPrice != null ? formatPrice(lang, m.unitPrice) : t.noPrice}
+                    {m.unitPrice != null ? (
+                      <>
+                        {formatPrice(lang, m.unitPrice)}
+                        <span className="block text-xs font-normal text-muted">{priceBasis(m.priceLabel, t.perUnit)}</span>
+                      </>
+                    ) : (
+                      t.noPrice
+                    )}
                   </td>
                 </tr>
               ))}

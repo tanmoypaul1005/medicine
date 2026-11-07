@@ -33,7 +33,7 @@ import {
   Worm,
   type LucideIcon,
 } from "lucide-react";
-import { formatNumber, formatPrice } from "@/lib/format";
+import { formatNumber, formatPrice, priceBasis } from "@/lib/format";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
 import { cn, fill } from "@/lib/utils";
@@ -194,8 +194,11 @@ export function ConditionMedicines({ lang, t, c }: { lang: Locale; t: T; c: Cond
                       <span className="font-medium">{b.brand}</span>{" "}
                       <span className="text-muted">{[b.strength, b.dosageForm].filter(Boolean).join(" · ")}</span>
                     </span>
-                    <span className="flex shrink-0 items-center gap-1 font-medium">
-                      {formatPrice(lang, b.unitPrice)}
+                    <span className="flex shrink-0 items-center gap-1">
+                      <span className="text-right font-medium">
+                        {formatPrice(lang, b.unitPrice)}
+                        <span className="block text-xs font-normal text-muted">{priceBasis(b.priceLabel, t.perUnit)}</span>
+                      </span>
                       <ChevronRight className="size-4 text-muted" aria-hidden />
                     </span>
                   </Link>

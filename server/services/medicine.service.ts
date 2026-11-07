@@ -14,6 +14,7 @@ export type MedicineRow = {
   genericName: string | null;
   manufacturerName: string | null;
   unitPrice: number | null;
+  priceLabel: string | null;
 };
 
 export type MedicineList = { rows: MedicineRow[]; total: number; page: number; pages: number };
@@ -46,7 +47,7 @@ export async function listMedicines({ q, type, sort, page }: MedicineListQuery):
     .sort(SORTS[sort])
     .skip((current - 1) * MEDICINE_PAGE_SIZE)
     .limit(MEDICINE_PAGE_SIZE)
-    .select("slug brand type strength dosageForm genericName manufacturerName unitPrice")
+    .select("slug brand type strength dosageForm genericName manufacturerName unitPrice priceLabel")
     .lean();
 
   return {
@@ -63,6 +64,7 @@ export async function listMedicines({ q, type, sort, page }: MedicineListQuery):
       genericName: d.genericName ?? null,
       manufacturerName: d.manufacturerName ?? null,
       unitPrice: d.unitPrice ?? null,
+      priceLabel: d.priceLabel ?? null,
     })),
   };
 }

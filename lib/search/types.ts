@@ -8,6 +8,7 @@ export type MedicineHit = {
   genericName?: string;
   manufacturerName?: string;
   unitPrice?: number | null;
+  priceLabel?: string | null; // null = per unit, else pack ("5 gm tube")
 };
 
 export type SearchResult = {

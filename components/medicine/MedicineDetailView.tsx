@@ -115,7 +115,7 @@ function Fact({ icon: Icon, label, children }: { icon: typeof Pill; label: strin
 
 export function Alternatives({ lang, t, m }: Props) {
   const fmt = money(lang);
-  const pct = new Intl.NumberFormat(lang === "bn" ? "bn-BD" : "en-US", { maximumFractionDigits: 0 });
+  const pct = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }); // same digits as the price beside it
   const nf = new Intl.NumberFormat(lang === "bn" ? "bn-BD" : "en-US");
   const anyPack = m.priceLabel != null || m.alternatives.some((a) => a.priceLabel != null);
 

@@ -15,7 +15,14 @@ export type ConditionCard = {
   genericCount: number;
 };
 
-export type ConditionBrand = { slug: string; brand: string; strength: string | null; dosageForm: string; unitPrice: number };
+export type ConditionBrand = {
+  slug: string;
+  brand: string;
+  strength: string | null;
+  dosageForm: string;
+  unitPrice: number;
+  priceLabel: string | null;
+};
 
 export type ConditionDetail = Omit<ConditionCard, "aliases" | "genericCount"> & {
   redFlagsBn: string[];
@@ -72,7 +79,7 @@ export async function getCondition(slug: string): Promise<ConditionDetail | null
   const generics = await Promise.all(
     (c.generics ?? []).map(async (g) => {
       const meds = await Medicine.find({ genericId: g.genericId, unitPrice: { $ne: null } })
-        .select("slug brand strength dosageForm unitPrice")
+        .select("slug brand strength dosageForm unitPrice priceLabel")
         .sort({ unitPrice: 1 })
         .lean();
       const ok = meds.filter((m) => allowed.test(m.dosageForm) && !ALWAYS_EXCLUDED_FORMS.test(m.dosageForm));
@@ -81,7 +88,14 @@ export async function getCondition(slug: string): Promise<ConditionDetail | null
       for (const m of ok) {
         if (seen.has(m.brand) || brands.length >= BRANDS_PER_GENERIC) continue;
         seen.add(m.brand);
-        brands.push({ slug: m.slug, brand: m.brand, strength: m.strength ?? null, dosageForm: m.dosageForm, unitPrice: m.unitPrice as number });
+        brands.push({
+          slug: m.slug,
+          brand: m.brand,
+          strength: m.strength ?? null,
+          dosageForm: m.dosageForm,
+          unitPrice: m.unitPrice as number,
+          priceLabel: m.priceLabel ?? null,
+        });
       }
       return { name: g.name, slug: g.slug, evidence: g.evidence, brands, brandTotal: new Set(ok.map((m) => m.brand)).size };
     })

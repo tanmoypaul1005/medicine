@@ -12,7 +12,7 @@ export type { MedicineHit, SearchResult };
 /** variants: extra spellings for Bangla input (ক → k|c, e.g. "seklo" + "seclo"). */
 export type ParsedQuery = { original: string; text: string; variants: string[]; strength?: string; bangla: boolean };
 
-const PROJECT = { _id: 0, slug: 1, brand: 1, type: 1, strength: 1, dosageForm: 1, genericName: 1, manufacturerName: 1, unitPrice: 1 };
+const PROJECT = { _id: 0, slug: 1, brand: 1, type: 1, strength: 1, dosageForm: 1, genericName: 1, manufacturerName: 1, unitPrice: 1, priceLabel: 1 };
 const UNIT = /^(mg|mcg|gm|g|ml|iu|%)$/;
 const NUM_UNIT = /^(\d+(?:\.\d+)?)(mg|mcg|gm|g|ml|iu|%)?$/;
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

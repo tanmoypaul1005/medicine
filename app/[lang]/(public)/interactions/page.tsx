@@ -68,7 +68,7 @@ async function Checker({ lang, t, searchParams }: { lang: Locale; t: Dictionary[
     <div className="space-y-8">
       <InteractionPicker
         lang={lang}
-        t={{ addPlaceholder: t.addPlaceholder, addAria: t.addAria, remove: t.remove, clear: t.clear, max: t.max }}
+        t={{ addPlaceholder: t.addPlaceholder, addAria: t.addAria, remove: t.remove, clear: t.clear, max: t.max, perUnit: t.perUnit }}
         selected={selected}
         max={MAX_CHECK_ITEMS}
       />
