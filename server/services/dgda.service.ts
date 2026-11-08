@@ -59,7 +59,7 @@ export async function getDgdaStatus(m: {
 
   await connectDB();
   const wantN = firstNumber(m.strength);
-  const ofCompany = (rows: { company?: string | null }[]) =>
+  const ofCompany = <R extends { company?: string | null }>(rows: R[]) =>
     rows.filter((r) => r.company && sameCompany(r.company, m.manufacturerName as string));
 
   let mine = ofCompany(await DgdaDrug.find({ brandKey: brandKey(m.brand) }).select(SELECT).limit(200).lean());

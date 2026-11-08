@@ -103,7 +103,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             real, keyboard-focusable control (visible focus ring on the brand background). */}
         <div className="group relative flex items-center justify-between gap-3 rounded-2xl bg-brand p-4 text-white transition hover:brightness-105 sm:p-8 dark:text-slate-900">
           <div className="flex items-center gap-3 sm:gap-4">
-            <span className="grid size-10 shrink-0 place-items-center rounded-lg sm:size-12 sm:rounded-xl bg-white/15">
+            <span className="grid size-10 shrink-0 place-items-center rounded-lg sm:size-12 sm:rounded-xl bg-slate-900 text-white">
               <Camera className="size-5 sm:size-6" aria-hidden />
             </span>
             <div>
