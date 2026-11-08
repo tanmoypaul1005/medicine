@@ -69,7 +69,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute inset-x-0 -top-40 mx-auto h-112 max-w-4xl rounded-full bg-brand/15 blur-3xl" />
         </div>
-        <div className="relative mx-auto flex max-w-3xl flex-col items-center px-4 pt-16 pb-12 text-center sm:pt-24">
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center px-4 pt-16 pb-6 text-center sm:pt-24 sm:pb-12">
           <span className="mb-5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted">
             {h.badge}
           </span>
@@ -101,21 +101,23 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
       <section className="mx-auto max-w-6xl px-4">
         {/* Card is clickable everywhere via the button's stretched ::after; the button is the single,
             real, keyboard-focusable control (visible focus ring on the brand background). */}
-        <div className="group relative flex flex-col items-start gap-4 rounded-2xl bg-brand p-6 text-white transition hover:brightness-105 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:text-slate-900">
-          <div className="flex items-center gap-4">
-            <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white/15">
-              <Camera className="size-6" aria-hidden />
+        <div className="group relative flex items-center justify-between gap-3 rounded-2xl bg-brand p-4 text-white transition hover:brightness-105 sm:p-8 dark:text-slate-900">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <span className="grid size-10 shrink-0 place-items-center rounded-lg sm:size-12 sm:rounded-xl bg-white/15">
+              <Camera className="size-5 sm:size-6" aria-hidden />
             </span>
             <div>
-              <h2 className="text-lg font-semibold sm:text-xl">{h.scanTitle}</h2>
-              <p className="text-sm opacity-85">{h.scanBody}</p>
+              <h2 className="text-base font-semibold sm:text-xl">{h.scanTitle}</h2>
+              <p className="text-xs leading-snug opacity-85 sm:text-sm">{h.scanBody}</p>
             </div>
           </div>
           <Link
             href={href(lang, "/scan")}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition after:absolute after:inset-0 after:rounded-2xl after:content-[''] hover:bg-slate-800 group-hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/80"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-slate-900 p-2 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition after:absolute after:inset-0 after:rounded-2xl after:content-[''] hover:bg-slate-800 group-hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/80 sm:rounded-xl sm:px-5 sm:py-2.5"
           >
-            {h.scanCta} <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden />
+            {/* Mobile: arrow-only (whole card is the link); text stays for screen readers. */}
+            <span className="sr-only sm:not-sr-only">{h.scanCta}</span>
+            <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden />
           </Link>
         </div>
       </section>

@@ -12,6 +12,7 @@ export function SiteHeader({ lang, t }: Props) {
     { path: "/medicines", label: t.nav.medicines },
     { path: "/interactions", label: t.nav.interactions },
     { path: "/scan", label: t.nav.scan },
+    { path: "/cost-calculator", label: t.nav.cost },
   ];
 
   return (

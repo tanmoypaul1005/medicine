@@ -1,36 +1,51 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import type { Types } from "mongoose";
 import { connectDB } from "@/lib/db";
-import { Medicine } from "@/models";
+import { Generic, Medicine } from "@/models";
 
-/** Medicines per sitemap file (x2 locales = 20k URLs, under Google's 50k limit). */
-export const SITEMAP_CHUNK = 10_000;
+/** Medicine pages listed in the sitemap (user decision: only the top N; the rest stay indexable via internal links). */
+export const SITEMAP_TOP_MEDICINES = 100;
 
-export async function countMedicines(): Promise<number> {
+/**
+ * "Top" medicines (no popularity data yet): top generics by brandCount, one medicine each =
+ * that generic's most common strength+form, cheapest priced brand within it.
+ */
+export async function topMedicineSlugs(): Promise<{ slug: string; lastModified: string | null }[]> {
   "use cache";
   cacheLife("days");
   cacheTag("medicines");
   await connectDB();
-  return Medicine.estimatedDocumentCount();
-}
 
-/** One sitemap chunk of medicine slugs, stable order by _id. */
-export async function medicineSlugsChunk(chunk: number): Promise<{ slug: string; lastModified: string | null }[]> {
-  "use cache";
-  cacheLife("days");
-  cacheTag("medicines");
-  await connectDB();
-  const docs = await Medicine.find()
-    .sort({ _id: 1 })
-    .skip(chunk * SITEMAP_CHUNK)
-    .limit(SITEMAP_CHUNK)
-    .select("slug updatedAt")
+  const generics = await Generic.find({ brandCount: { $gt: 0 } })
+    .sort({ brandCount: -1, name: 1 })
+    .limit(SITEMAP_TOP_MEDICINES * 2) // spare: some generics may have no priced medicine
+    .select("_id")
     .lean();
-  return docs.map((d) => ({ slug: d.slug, lastModified: d.updatedAt ? new Date(d.updatedAt).toISOString() : null }));
+  const rank = new Map(generics.map((g, i) => [String(g._id), i]));
+
+  const picks = await Medicine.aggregate<{ _id: Types.ObjectId; slug: string; updatedAt?: Date }>([
+    { $match: { genericId: { $in: generics.map((g) => g._id) }, unitPrice: { $ne: null } } },
+    { $sort: { unitPrice: 1, brand: 1 } },
+    {
+      $group: {
+        _id: { g: "$genericId", s: "$strength", f: "$formSlug" },
+        n: { $sum: 1 },
+        slug: { $first: "$slug" },
+        updatedAt: { $first: "$updatedAt" },
+      },
+    },
+    { $sort: { n: -1, slug: 1 } },
+    { $group: { _id: "$_id.g", slug: { $first: "$slug" }, updatedAt: { $first: "$updatedAt" } } },
+  ]);
+
+  return picks
+    .sort((a, b) => (rank.get(String(a._id)) ?? 1e9) - (rank.get(String(b._id)) ?? 1e9))
+    .slice(0, SITEMAP_TOP_MEDICINES)
+    .map((p) => ({ slug: p.slug, lastModified: p.updatedAt ? new Date(p.updatedAt).toISOString() : null }));
 }
 
-/** Sitemap file ids: 0 = static pages + conditions, 1..n = medicine chunks. */
+/** Sitemap file ids: 0 = static pages + conditions, 1 = top medicines. */
 export async function sitemapIds(): Promise<number[]> {
-  const chunks = Math.ceil((await countMedicines()) / SITEMAP_CHUNK);
-  return [0, ...Array.from({ length: chunks }, (_, i) => i + 1)];
+  return [0, 1];
 }
