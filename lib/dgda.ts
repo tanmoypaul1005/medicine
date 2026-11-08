@@ -7,12 +7,27 @@ export const DGDA_API = "https://tr.ocl.dghs.gov.bd/api/orgs/MoHFW/sources/DGDA-
 export const DGDA_BROWSE = "https://tr.ocl.dghs.gov.bd/";
 
 const STRENGTH_TAIL = /[\s\-_/]*\d+(?:\.\d+)?\s*(?:mg|mcg|gm|g|ml|iu|%)?$/i;
+// DGDA trade names sometimes end with the form: "A-Cof Syrup", "Xyz Eye Drops".
+const FORM_TAIL =
+  /[\s\-_/]+(?:tablets?|tab|capsules?|cap|syrup|suspension|susp|injection|inj|infusion|cream|ointment|oint|gel|lotion|drops?|eye drops|ear drops|nasal drops|nasal spray|spray|inhaler|solution|powder|sachet|suppository|elixir)$/i;
 
-/** "Aspra-40" → "aspra", "Ace Plus" → "aceplus", "G-Paracetamol" → "gparacetamol". */
+/** "Aspra-40" → "aspra", "A-Cof Syrup" → "acof", "Ace Plus" → "aceplus", "G-Paracetamol" → "gparacetamol". */
 export function brandKey(name: string): string {
   let s = name.normalize("NFKD").toLowerCase().trim();
-  for (let i = 0; i < 3 && STRENGTH_TAIL.test(s); i++) s = s.replace(STRENGTH_TAIL, "");
+  for (let i = 0; i < 4; i++) {
+    const next = s.replace(STRENGTH_TAIL, "").replace(FORM_TAIL, "").trim();
+    if (next === s || !next) break;
+    s = next;
+  }
   return s.replace(/[^a-z0-9]/g, "");
+}
+
+/** Base brand without a suffix word: "Adonid DS" → "adonid", "Admira MR" → "admira"; null if single word. */
+export function baseBrandKey(name: string): string | null {
+  const first = name.trim().split(/\s+/)[0] ?? "";
+  if (first.length === name.trim().length) return null;
+  const k = brandKey(first);
+  return k.length >= 3 ? k : null;
 }
 
 const COMPANY_NOISE = new Set([

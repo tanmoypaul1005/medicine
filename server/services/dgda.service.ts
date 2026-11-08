@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { connectDB } from "@/lib/db";
-import { brandKey, DAR_INPUT, darKey, firstNumber, sameCompany } from "@/lib/dgda";
+import { baseBrandKey, brandKey, DAR_INPUT, darKey, firstNumber, sameCompany } from "@/lib/dgda";
 import { bnToLatin, hasBangla } from "@/lib/search/bnTranslit";
 import { DgdaDrug } from "@/models";
 
@@ -58,11 +58,18 @@ export async function getDgdaStatus(m: {
   if (!m.manufacturerName) return { status: "notFound", syncedAt };
 
   await connectDB();
-  const rows = await DgdaDrug.find({ brandKey: brandKey(m.brand) }).select(SELECT).limit(200).lean();
-  const mine = rows.filter((r) => r.company && sameCompany(r.company, m.manufacturerName as string));
+  const wantN = firstNumber(m.strength);
+  const ofCompany = (rows: { company?: string | null }[]) =>
+    rows.filter((r) => r.company && sameCompany(r.company, m.manufacturerName as string));
+
+  let mine = ofCompany(await DgdaDrug.find({ brandKey: brandKey(m.brand) }).select(SELECT).limit(200).lean());
+  // Fallback: "Adonid DS" listed only as "Adonid" → accept only same company AND same strength.
+  const base = mine.length ? null : baseBrandKey(m.brand);
+  if (base && wantN) {
+    mine = ofCompany(await DgdaDrug.find({ brandKey: base, strengthNum: wantN }).select(SELECT).limit(50).lean());
+  }
   if (!mine.length) return { status: "notFound", syncedAt };
 
-  const wantN = firstNumber(m.strength);
   const wantForm = formWord(m.dosageForm);
   const score = (r: (typeof mine)[number]) =>
     (wantN && r.strengthNum === wantN ? 2 : 0) + (wantForm && m.dosageForm.toLowerCase().includes(formWord(r.dosageForm)) ? 1 : 0);
