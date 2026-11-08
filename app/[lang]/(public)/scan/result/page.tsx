@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { BadgePercent, Camera, ChevronRight, GitCompareArrows } from "lucide-react";
+import { BadgePercent, Calculator, Camera, ChevronRight, GitCompareArrows } from "lucide-react";
 import { InteractionResults } from "@/components/interactions/InteractionResults";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { formatNumber, formatPrice, priceBasis } from "@/lib/format";
@@ -11,7 +11,7 @@ import { hasLocale, href, type Locale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/getDictionary";
 import { fill } from "@/lib/utils";
 import { checkInteractions } from "@/server/services/interaction.service";
-import { getMedicineDetail, type MedicineDetail } from "@/server/services/medicineDetail.service";
+import { cheapestAlternative, getMedicineDetail, type MedicineDetail } from "@/server/services/medicineDetail.service";
 import { scanResultQuery } from "@/server/validators/interaction";
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
@@ -47,15 +47,6 @@ export default async function ScanResultPage({ params, searchParams }: PageProps
       </div>
     </section>
   );
-}
-
-type Cheaper = { slug: string; brand: string; manufacturerName: string | null; unitPrice: number; priceLabel: string | null };
-
-/** Cheapest alternative on the same price basis that is actually cheaper. */
-function cheapestAlternative(m: MedicineDetail): Cheaper | null {
-  if (m.unitPrice == null) return null;
-  const alt = m.alternatives.find((a) => a.priceLabel === m.priceLabel && a.unitPrice < (m.unitPrice as number));
-  return alt ? { ...alt } : null;
 }
 
 async function Results({ lang, dict, searchParams }: { lang: Locale; dict: Dictionary; searchParams: SP }) {
@@ -130,6 +121,12 @@ async function Results({ lang, dict, searchParams }: { lang: Locale; dict: Dicti
         ))}
       </ul>
       {withCheaper > 0 && <p className="text-sm text-muted">{t.switchNote}</p>}
+      <Link
+        href={href(lang, `/cost-calculator?m=${meds.map((x) => x.slug).join(",")}`)}
+        className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:border-brand"
+      >
+        <Calculator className="size-4 text-brand" aria-hidden /> {t.costLink}
+      </Link>
 
       {interactions && interactions.items.length >= 2 && (
         <section>

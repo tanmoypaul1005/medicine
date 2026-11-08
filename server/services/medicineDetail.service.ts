@@ -40,6 +40,13 @@ export type MedicineDetail = {
 
 const ALT_LIMIT = 15;
 
+/** Cheapest alternative on the same price basis that is actually cheaper (scan result, cost calculator). */
+export function cheapestAlternative(m: MedicineDetail): AltRow | null {
+  if (m.unitPrice == null) return null;
+  const alt = m.alternatives.find((a) => a.priceLabel === m.priceLabel && a.unitPrice < (m.unitPrice as number));
+  return alt ? { ...alt } : null;
+}
+
 const priceLabelOf = (packs: { label: string; price: number }[] | undefined | null): string | null => {
   if (!packs?.length || packs.some((p) => p.label === "unit")) return null;
   return [...packs].sort((a, b) => a.price - b.price)[0].label;
