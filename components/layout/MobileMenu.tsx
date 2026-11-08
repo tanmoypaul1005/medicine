@@ -6,7 +6,7 @@ import { Menu, X } from "lucide-react";
 
 type Props = { items: { href: string; label: string }[]; openLabel: string; closeLabel: string };
 
-/** Mobile/tablet nav (below lg): hamburger → dropdown panel under the sticky header. */
+/** Mobile/tablet nav (below xl): hamburger → dropdown panel under the sticky header. */
 export function MobileMenu({ items, openLabel, closeLabel }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -18,7 +18,7 @@ export function MobileMenu({ items, openLabel, closeLabel }: Props) {
   }, [open]);
 
   return (
-    <div className="lg:hidden">
+    <div className="xl:hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

@@ -14,6 +14,7 @@ const STATIC_PATHS: { path: string; priority: number; changefreq: "daily" | "wee
   { path: "/interactions", priority: 0.6, changefreq: "monthly" },
   { path: "/scan", priority: 0.6, changefreq: "monthly" },
   { path: "/cost-calculator", priority: 0.6, changefreq: "monthly" },
+  { path: "/verify", priority: 0.6, changefreq: "monthly" },
 ];
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

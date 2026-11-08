@@ -14,6 +14,7 @@ export function SiteHeader({ lang, t }: Props) {
     { path: "/interactions", label: t.nav.interactions },
     { path: "/scan", label: t.nav.scan },
     { path: "/cost-calculator", label: t.nav.cost },
+    { path: "/verify", label: t.nav.verify },
   ];
 
   return (
@@ -25,7 +26,7 @@ export function SiteHeader({ lang, t }: Props) {
           </span>
           MedicineMate
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-medium text-muted lg:flex">
+        <nav className="hidden items-center gap-6 text-sm font-medium text-muted xl:flex">
           {nav.map((n) => (
             <Link key={n.path} href={href(lang, n.path)} className="hover:text-foreground transition">
               {n.label}

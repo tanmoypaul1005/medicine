@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
+import { Suspense } from "react";
+import { DgdaStatus } from "@/components/medicine/DgdaStatus";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { Alternatives, GenericInfo, MedicineHeader, Variants } from "@/components/medicine/MedicineDetailView";
 import { breadcrumbLd, JsonLd } from "@/components/seo/JsonLd";
@@ -114,6 +116,15 @@ async function Detail({ params }: { params: Params }) {
 
       <MedicineHeader lang={lang} t={t} m={m} />
       <Disclaimer text={dict.disclaimer} className="mt-4" />
+      <div className="mt-4">
+        <Suspense fallback={null}>
+          <DgdaStatus
+            lang={lang}
+            t={dict.dgda}
+            m={{ brand: m.brand, manufacturerName: m.manufacturerName, strength: m.strength, dosageForm: m.dosageForm }}
+          />
+        </Suspense>
+      </div>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_22rem]">
         <div className="order-2 lg:order-1">
