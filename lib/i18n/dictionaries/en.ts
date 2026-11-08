@@ -5,7 +5,7 @@ const en: Dictionary = {
     title: "MedicineMate — Medicine Prices & Cheaper Alternatives",
     description: "Prices, cheaper same-generic alternatives and warnings for any medicine in Bangladesh, in one place.",
   },
-  nav: { conditions: "Conditions", medicines: "All medicines", interactions: "Interaction checker", scan: "Prescription scan", cost: "Cost calculator" },
+  nav: { conditions: "Conditions", medicines: "All medicines", interactions: "Interaction checker", scan: "Prescription scan", cost: "Cost calculator", menuOpen: "Open menu", menuClose: "Close menu" },
   langToggle: { label: "বাংলা", aria: "বাংলায় দেখুন" },
   search: {
     placeholder: "Type a medicine — Napa, Paracetamol, নাপা…",

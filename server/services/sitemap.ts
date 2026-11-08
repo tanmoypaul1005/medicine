@@ -2,7 +2,7 @@ import "server-only";
 import { locales } from "@/lib/i18n/config";
 import { SITE_URL } from "@/lib/seo";
 import { listConditions } from "@/server/services/condition.service";
-import { topMedicineSlugs } from "@/server/services/seo.service";
+import { SITEMAP_TOP_MEDICINES, topMedicineSlugs } from "@/server/services/seo.service";
 
 // XML builders for /sitemap.xml (index) and /sitemap/<id>.xml (parts). Route handlers in app/.
 // id 0 = static pages + conditions; id 1 = top 100 medicines; every URL in bn + en with hreflang.
@@ -44,7 +44,7 @@ export async function sitemapPartXml(id: number): Promise<string> {
       ...conditions.map((c) => ({ path: `/condition/${c.slug}`, priority: 0.7, changefreq: "monthly" })),
     ];
   } else {
-    const meds = await topMedicineSlugs();
+    const meds = await topMedicineSlugs(SITEMAP_TOP_MEDICINES);
     entries = meds.map((m) => ({ path: `/medicine/${m.slug}`, priority: 0.6, changefreq: "weekly", lastmod: m.lastModified }));
   }
   return (

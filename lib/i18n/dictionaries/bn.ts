@@ -3,7 +3,7 @@ const bn = {
     title: "MedicineMate — ওষুধের দাম ও সস্তা বিকল্প",
     description: "বাংলাদেশের যেকোনো ওষুধের দাম, একই generic-এর সস্তা বিকল্প আর সতর্কতা এক জায়গায়।",
   },
-  nav: { conditions: "সাধারণ সমস্যা", medicines: "ওষুধের তালিকা", interactions: "Interaction checker", scan: "Prescription scan", cost: "খরচ calculator" },
+  nav: { conditions: "সাধারণ সমস্যা", medicines: "ওষুধের তালিকা", interactions: "Interaction checker", scan: "Prescription scan", cost: "খরচ calculator", menuOpen: "মেনু খুলুন", menuClose: "মেনু বন্ধ করুন" },
   langToggle: { label: "English", aria: "Switch to English" },
   search: {
     placeholder: "ওষুধের নাম লিখুন — Napa, Paracetamol, নাপা…",

@@ -78,7 +78,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             <span className="text-brand">{h.titleHighlight}</span>
             {h.titleB}
           </h1>
-          <p className="mt-4 max-w-xl text-2xl text-base text-muted md:text-lg">{h.subtitle}</p>
+          <p className="mt-4 max-w-xl text-base text-muted md:max-w-none md:text-lg">{h.subtitle}</p>
 
           <SearchBar lang={lang} t={t.search} autoFocus className="mt-8" />
 

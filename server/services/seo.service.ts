@@ -11,7 +11,7 @@ export const SITEMAP_TOP_MEDICINES = 100;
  * "Top" medicines (no popularity data yet): top generics by brandCount, one medicine each =
  * that generic's most common strength+form, cheapest priced brand within it.
  */
-export async function topMedicineSlugs(): Promise<{ slug: string; lastModified: string | null }[]> {
+export async function topMedicineSlugs(limit: number): Promise<{ slug: string; lastModified: string | null }[]> {
   "use cache";
   cacheLife("days");
   cacheTag("medicines");
@@ -19,7 +19,7 @@ export async function topMedicineSlugs(): Promise<{ slug: string; lastModified: 
 
   const generics = await Generic.find({ brandCount: { $gt: 0 } })
     .sort({ brandCount: -1, name: 1 })
-    .limit(SITEMAP_TOP_MEDICINES * 2) // spare: some generics may have no priced medicine
+    .limit(limit * 2) // spare: some generics may have no priced medicine
     .select("_id")
     .lean();
   const rank = new Map(generics.map((g, i) => [String(g._id), i]));
@@ -41,7 +41,7 @@ export async function topMedicineSlugs(): Promise<{ slug: string; lastModified: 
 
   return picks
     .sort((a, b) => (rank.get(String(a._id)) ?? 1e9) - (rank.get(String(b._id)) ?? 1e9))
-    .slice(0, SITEMAP_TOP_MEDICINES)
+    .slice(0, limit)
     .map((p) => ({ slug: p.slug, lastModified: p.updatedAt ? new Date(p.updatedAt).toISOString() : null }));
 }
 
