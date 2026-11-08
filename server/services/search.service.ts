@@ -1,5 +1,6 @@
 import "server-only";
 import type { PipelineStage, QueryFilter } from "mongoose";
+import { cacheLife, cacheTag } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { bnToLatin, hasBangla } from "@/lib/search/bnTranslit";
 import { Medicine, MEDICINE_SEARCH_INDEX, SearchLog, type MedicineDoc } from "@/models";
@@ -81,7 +82,12 @@ function searchStage(p: ParsedQuery, extra: Record<string, unknown> = {}): Pipel
   } as PipelineStage;
 }
 
-async function atlasSearch(p: ParsedQuery, skip: number, limit: number) {
+async function atlasSearch(p: ParsedQuery, skip: number, limit: number, withTotal = true) {
+  if (!withTotal) {
+    // Autocomplete: no total count/$facet → Atlas stops after `limit` docs instead of counting every match.
+    const hits = await Medicine.aggregate<MedicineHit>([searchStage(p), { $limit: limit }, { $project: PROJECT }]);
+    return { hits, total: hits.length };
+  }
   const [res] = await Medicine.aggregate<{ hits: MedicineHit[]; meta: { count?: { total?: number } }[] }>([
     searchStage(p, { count: { type: "total" } }),
     {
@@ -112,10 +118,15 @@ async function regexSearch(p: ParsedQuery, skip: number, limit: number) {
   return { hits, total };
 }
 
-async function run(p: ParsedQuery, skip: number, limit: number): Promise<{ hits: MedicineHit[]; total: number; engine: SearchResult["engine"] }> {
+async function run(
+  p: ParsedQuery,
+  skip: number,
+  limit: number,
+  withTotal = true
+): Promise<{ hits: MedicineHit[]; total: number; engine: SearchResult["engine"] }> {
   if (!p.text) return { hits: [], total: 0, engine: "atlas" };
   try {
-    const r = await atlasSearch(p, skip, limit);
+    const r = await atlasSearch(p, skip, limit, withTotal);
     if (r.total > 0) return { ...r, engine: "atlas" };
   } catch (err) {
     console.error("[search] Atlas Search failed, using regex fallback:", (err as Error).message);
@@ -124,16 +135,34 @@ async function run(p: ParsedQuery, skip: number, limit: number): Promise<{ hits:
 }
 
 // ---------- Public API ----------
+/** Cache key = normalized query (NFC, collapsed spaces). Not lowercased: alias matching uses the original text. */
+const cacheKey = (q: string) => parseQuery(q).original;
+
 export async function autocomplete(q: string): Promise<MedicineHit[]> {
+  return cachedAutocomplete(cacheKey(q));
+}
+
+async function cachedAutocomplete(key: string): Promise<MedicineHit[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("medicines", "search");
   await connectDB();
-  return (await run(parseQuery(q), 0, AUTOCOMPLETE_LIMIT)).hits;
+  return (await run(parseQuery(key), 0, AUTOCOMPLETE_LIMIT, false)).hits;
 }
 
 export async function searchMedicines(q: string, page = 1): Promise<SearchResult> {
+  const key = cacheKey(q);
+  const r = await cachedSearch(key, page);
+  if (r.total === 0 && key) await logZeroResult(key); // outside the cache: every zero-hit search is counted
+  return r;
+}
+
+async function cachedSearch(key: string, page: number): Promise<SearchResult> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("medicines", "search");
   await connectDB();
-  const p = parseQuery(q);
-  const r = await run(p, (page - 1) * SEARCH_PAGE_SIZE, SEARCH_PAGE_SIZE);
-  if (r.total === 0 && p.original) await logZeroResult(p.original);
+  const r = await run(parseQuery(key), (page - 1) * SEARCH_PAGE_SIZE, SEARCH_PAGE_SIZE);
   return { hits: r.hits, total: r.total, engine: r.engine, page, pages: Math.max(1, Math.ceil(r.total / SEARCH_PAGE_SIZE)) };
 }
 

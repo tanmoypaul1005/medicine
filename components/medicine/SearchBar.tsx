@@ -67,7 +67,7 @@ function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
 
-  const term = useDebounce(q.trim(), 250);
+  const term = useDebounce(q.trim(), 180);
   const { data: suggestions = [], isFetching, isSuccess } = useAutocompleteQuery(term, { skip: term.length < 2 });
   const showList = open && term.length >= 2 && suggestions.length > 0;
   const showEmpty = open && term.length >= 2 && isSuccess && !isFetching && suggestions.length === 0;
