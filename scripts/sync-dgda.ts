@@ -22,7 +22,7 @@ async function fetchPage(page: number): Promise<{ items: Concept[]; total: numbe
   for (let attempt = 1; ; attempt++) {
     try {
       const res = await fetch(`${DGDA_API}/concepts/?limit=${PAGE}&page=${page}&verbose=true`, {
-        headers: { Accept: "application/json", "User-Agent": "MedicineMate-sync" },
+        headers: { Accept: "application/json", "User-Agent": "OshudKhuji-sync" },
         signal: AbortSignal.timeout(120_000),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

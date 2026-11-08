@@ -2,7 +2,7 @@ import type { Dictionary } from "./bn";
 
 const en: Dictionary = {
   meta: {
-    title: "MedicineMate — Medicine Prices & Cheaper Alternatives",
+    title: "OshudKhuji — Medicine Prices & Cheaper Alternatives",
     description: "Prices, cheaper same-generic alternatives and warnings for any medicine in Bangladesh, in one place.",
   },
   nav: { conditions: "Conditions", medicines: "All medicines", interactions: "Interaction checker", scan: "Prescription scan", cost: "Cost calculator", verify: "DGDA check", menuOpen: "Open menu", menuClose: "Close menu" },
@@ -64,7 +64,7 @@ const en: Dictionary = {
       { q: "Does a cheaper alternative work the same?", a: "Same generic, strength and form means the same ingredient at the same dose. Still, ask a doctor or pharmacist before switching." },
       { q: "Are prescription photos stored?", a: "No. Photos are only used to read the medicine names and are never stored." },
       { q: "Does “No information” on interactions mean safe?", a: "No. It means our data has nothing on that pair. If in doubt, ask a doctor or pharmacist." },
-      { q: "Is this a substitute for medical advice?", a: "No. MedicineMate is for information only. Decide on starting, stopping or switching medicines with your doctor." },
+      { q: "Is this a substitute for medical advice?", a: "No. OshudKhuji is for information only. Decide on starting, stopping or switching medicines with your doctor." },
     ],
     features: {
       alternatives: {

@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 // /manifest.webmanifest — name, icons and colours for "Add to home screen" (Android/Chrome).
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "MedicineMate — ওষুধের দাম ও সস্তা বিকল্প",
-    short_name: "MedicineMate",
+    name: "ওষুধখুঁজি (OshudKhuji) — ওষুধের দাম ও সস্তা বিকল্প",
+    short_name: "ওষুধখুঁজি",
     description: "বাংলাদেশের যেকোনো ওষুধের দাম, সস্তা বিকল্প, সতর্কতা ও drug interaction।",
     start_url: "/bn",
     display: "standalone",

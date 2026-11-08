@@ -1,8 +1,9 @@
-# MedicineMate — AI Context
+# OshudKhuji (ওষুধখুঁজি) — AI Context
 
 > Read this first. Keep it short and current: after any task that changes structure, conventions, models, APIs, env vars or status, update the relevant section (and tick Status). No long prose; facts only.
 
 ## What
+Brand: bn "ওষুধখুঁজি", en "OshudKhuji" (user decision) — always via `siteName(lang)` / `SITE_NAMES` in `lib/brand.ts`, never hard-coded. (Repo/db names still say medicine/medicinecheck.)
 Bangladesh medicine helper web app: search any medicine (brand/generic/Bangla/typo), see price, cheaper alternatives (same generic+strength+form), warnings, drug interactions, prescription scan (Gemini Vision OCR). Info only, never medical advice; every medicine/alt/interaction/scan/condition page shows `<Disclaimer />`. Symptom→medicine ONLY via the curated conditions guide (`docs/conditions-feature.md`): OTC allow-list per condition, label evidence required, red flags first, no dosing; never antibiotics/steroids/sedatives/controlled/Rx-only.
 
 ## Stack

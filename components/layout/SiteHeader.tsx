@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Pill } from "lucide-react";
+import { siteName } from "@/lib/brand";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
 import { LanguageToggle } from "./LanguageToggle";
@@ -24,7 +25,7 @@ export function SiteHeader({ lang, t }: Props) {
           <span className="grid size-8 place-items-center rounded-lg bg-brand text-white dark:text-slate-900">
             <Pill className="size-4" aria-hidden />
           </span>
-          MedicineMate
+          {siteName(lang)}
         </Link>
         <nav className="hidden items-center gap-6 text-sm font-medium text-muted xl:flex">
           {nav.map((n) => (

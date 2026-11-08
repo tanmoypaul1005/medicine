@@ -11,6 +11,7 @@ import {
 } from "@/components/medicine/MedicinePicker";
 import { costParam, rowCost, type CostRow } from "@/lib/cost";
 import { formatNumber, formatPrice, priceBasis } from "@/lib/format";
+import { siteName } from "@/lib/brand";
 import { href, type Locale } from "@/lib/i18n/config";
 import { fill } from "@/lib/utils";
 
@@ -319,7 +320,7 @@ export function CostCalculator({ lang, t, rows, max, maxQty }: Props) {
                 className="hidden bg-white p-8 text-black print:block"
               >
                 <h2 className="text-xl font-bold">
-                  MedicineMate — {t.receiptTitle}
+                  {siteName(lang)} — {t.receiptTitle}
                 </h2>
                 <p className="text-sm">
                   {fill(t.receiptDate, { date: printedAt.date })}

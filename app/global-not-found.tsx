@@ -6,12 +6,13 @@ import { Hind_Siliguri, Inter } from "next/font/google";
 import { Pill, SearchX } from "lucide-react";
 import bn from "@/lib/i18n/dictionaries/bn";
 import en from "@/lib/i18n/dictionaries/en";
+import { SITE_NAMES } from "@/lib/brand";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 const hind = Hind_Siliguri({ variable: "--font-bangla", subsets: ["bengali", "latin"], weight: ["400", "600", "700"], display: "swap" });
 
-export const metadata: Metadata = { title: `${bn.notFound.title} · ${en.notFound.title} | MedicineMate` };
+export const metadata: Metadata = { title: `${bn.notFound.title} · ${en.notFound.title} | ${SITE_NAMES.bn}` };
 
 export default function GlobalNotFound() {
   return (
@@ -24,7 +25,7 @@ export default function GlobalNotFound() {
               <span className="grid size-8 place-items-center rounded-lg bg-brand text-white dark:text-slate-900">
                 <Pill className="size-4" aria-hidden />
               </span>
-              MedicineMate
+              {SITE_NAMES.bn}
             </Link>
           </div>
         </header>
