@@ -33,7 +33,8 @@ export function alternatesFor(lang: Locale, path = ""): NonNullable<Metadata["al
  * Share image for every page (WhatsApp, Facebook, X, LinkedIn): public/og-image.png, 1200x630, <300KB.
  * Source screenshot: public/ogImage.png (resized/cropped). Replace og-image.png to change it.
  */
-export const OG_IMAGE = { url: "/og-image.png", width: 1200, height: 630, alt: SITE_NAME, type: "image/png" };
+export const OG_IMAGE = { url: "/og-image.png?v=2", // bump ?v= when the image changes (LinkedIn/Facebook cache by URL)
+   width: 1200, height: 630, alt: SITE_NAME, type: "image/png" };
 
 /**
  * Google Search Console "HTML tag" verification code from env GOOGLE_SITE_VERIFICATION_KEY.
