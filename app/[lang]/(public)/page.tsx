@@ -69,7 +69,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute inset-x-0 -top-40 mx-auto h-112 max-w-4xl rounded-full bg-brand/15 blur-3xl" />
         </div>
-        <div className="relative mx-auto flex max-w-3xl flex-col items-center px-4 pt-16 pb-12 text-center sm:pt-24">
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center px-4 pt-16 pb-6 text-center sm:pt-24 sm:pb-12">
           <span className="mb-5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted">
             {h.badge}
           </span>
