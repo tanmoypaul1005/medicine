@@ -52,7 +52,26 @@ body {
 }
 /* Visible keyboard focus everywhere (mouse clicks don't trigger :focus-visible). Components on the
    brand background override with their own ring (e.g. home scan CTA). */
+/* Cost calculator "download": #cost-receipt is portaled to <body>; print only it, in normal
+   flow (no absolute positioning → long tables continue on the next page). */
+@media print {
+  body:has(> #cost-receipt) > :not(#cost-receipt) {
+    display: none !important;
+  }
+  html:has(#cost-receipt),
+  body:has(> #cost-receipt) {
+    background: #fff !important;
+  }
+  #cost-receipt tr {
+    break-inside: avoid;
+  }
+}
+
 @layer base {
+  /* Tailwind 4 dropped cursor:pointer on buttons — restore it for every clickable control */
+  :where(button, [role="button"], summary, select, input[type="submit"], input[type="button"]):not(:disabled) {
+    cursor: pointer;
+  }
   :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
     outline: 2px solid var(--color-brand);
     outline-offset: 2px;

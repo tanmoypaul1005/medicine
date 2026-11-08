@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Pill } from "lucide-react";
+import { siteName } from "@/lib/brand";
 import { href, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
 import { LanguageToggle } from "./LanguageToggle";
+import { MobileMenu } from "./MobileMenu";
 
 type Props = { lang: Locale; t: Dictionary };
 
@@ -13,6 +15,7 @@ export function SiteHeader({ lang, t }: Props) {
     { path: "/interactions", label: t.nav.interactions },
     { path: "/scan", label: t.nav.scan },
     { path: "/cost-calculator", label: t.nav.cost },
+    { path: "/verify", label: t.nav.verify },
   ];
 
   return (
@@ -22,9 +25,9 @@ export function SiteHeader({ lang, t }: Props) {
           <span className="grid size-8 place-items-center rounded-lg bg-brand text-white dark:text-slate-900">
             <Pill className="size-4" aria-hidden />
           </span>
-          MedicineMate
+          {siteName(lang)}
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-medium text-muted sm:flex">
+        <nav className="hidden items-center gap-6 text-sm font-medium text-muted xl:flex">
           {nav.map((n) => (
             <Link key={n.path} href={href(lang, n.path)} className="hover:text-foreground transition">
               {n.label}
@@ -33,6 +36,11 @@ export function SiteHeader({ lang, t }: Props) {
         </nav>
         <div className="flex items-center gap-2">
           <LanguageToggle lang={lang} label={t.langToggle.label} aria={t.langToggle.aria} />
+          <MobileMenu
+            items={nav.map((n) => ({ href: href(lang, n.path), label: n.label }))}
+            openLabel={t.nav.menuOpen}
+            closeLabel={t.nav.menuClose}
+          />
         </div>
       </div>
     </header>

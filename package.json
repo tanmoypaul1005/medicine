@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:search-index": "tsx --env-file=.env scripts/search-index.ts",
+    "db:sync-dgda": "tsx --env-file=.env scripts/sync-dgda.ts",
     "test:search": "tsx scripts/test-search.ts"
   },
   "dependencies": {

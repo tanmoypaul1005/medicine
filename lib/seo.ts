@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SITE_NAME_LATIN, siteName } from "@/lib/brand";
 import type { Locale } from "@/lib/i18n/config";
 
 /**
@@ -15,7 +16,8 @@ function resolveSiteUrl(): string {
   return "http://localhost:3000";
 }
 export const SITE_URL = resolveSiteUrl().replace(/\/+$/, "");
-export const SITE_NAME = "MedicineMate";
+/** Latin name for locale-less places; per-language name: siteName(lang) from lib/brand.ts. */
+export const SITE_NAME = SITE_NAME_LATIN;
 
 const OG_LOCALE: Record<Locale, string> = { bn: "bn_BD", en: "en_US" };
 
@@ -54,7 +56,7 @@ export function pageMeta(
   path: string,
   { title, description, absoluteTitle = false }: { title: string; description: string; absoluteTitle?: boolean }
 ): Metadata {
-  const fullTitle = absoluteTitle ? title : `${title} | ${SITE_NAME}`;
+  const fullTitle = absoluteTitle ? title : `${title} | ${siteName(lang)}`;
   const image = OG_IMAGE;
   return {
     title: absoluteTitle ? { absolute: title } : title,
@@ -62,7 +64,7 @@ export function pageMeta(
     alternates: alternatesFor(lang, path),
     openGraph: {
       type: "website",
-      siteName: SITE_NAME,
+      siteName: siteName(lang),
       locale: OG_LOCALE[lang],
       alternateLocale: OG_LOCALE[lang === "bn" ? "en" : "bn"],
       url: `/${lang}${path}`,

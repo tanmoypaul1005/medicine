@@ -7,3 +7,4 @@ export * from "./Prescription";
 export * from "./Report";
 export * from "./SearchLog";
 export * from "./Condition";
+export * from "./DgdaDrug";

@@ -4,7 +4,8 @@ import { Hind_Siliguri, Inter } from "next/font/google";
 import { StoreProvider } from "@/store/StoreProvider";
 import { hasLocale, locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
-import { GOOGLE_SITE_VERIFICATION, OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { siteName } from "@/lib/brand";
+import { GOOGLE_SITE_VERIFICATION, OG_IMAGE, SITE_URL } from "@/lib/seo";
 import "../globals.css";
 import { Analytics } from "@vercel/analytics/next"
 
@@ -28,11 +29,11 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   // or every page would inherit the home page's alternates.
   return {
     metadataBase: new URL(SITE_URL),
-    title: { default: t.title, template: `%s | ${SITE_NAME}` },
+    title: { default: t.title, template: `%s | ${siteName(lang)}` },
     description: t.description,
-    applicationName: SITE_NAME,
+    applicationName: siteName(lang),
     formatDetection: { telephone: false, email: false, address: false },
-    openGraph: { type: "website", siteName: SITE_NAME, locale: lang === "bn" ? "bn_BD" : "en_US", images: [OG_IMAGE] },
+    openGraph: { type: "website", siteName: siteName(lang), locale: lang === "bn" ? "bn_BD" : "en_US", images: [OG_IMAGE] },
     twitter: { card: "summary_large_image", images: [OG_IMAGE.url] },
     // <meta name="google-site-verification"> for Google Search Console (only when the env var is set)
     ...(GOOGLE_SITE_VERIFICATION && { verification: { google: GOOGLE_SITE_VERIFICATION } }),

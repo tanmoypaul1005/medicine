@@ -44,7 +44,7 @@ export default async function CostCalculatorPage({ params, searchParams }: PageP
 
       <div className="mt-6">
         <Suspense fallback={<div className="h-14 animate-pulse rounded-2xl border border-border bg-card" />}>
-          <Calc lang={lang} t={t} searchParams={searchParams} />
+          <Calc lang={lang} t={t} disclaimer={dict.disclaimer} searchParams={searchParams} />
         </Suspense>
       </div>
 
@@ -53,7 +53,7 @@ export default async function CostCalculatorPage({ params, searchParams }: PageP
   );
 }
 
-async function Calc({ lang, t, searchParams }: { lang: Locale; t: Dictionary["cost"]; searchParams: SP }) {
+async function Calc({ lang, t, disclaimer, searchParams }: { lang: Locale; t: Dictionary["cost"]; disclaimer: string; searchParams: SP }) {
   const sp = await searchParams;
   const { m } = costQuery.parse({ m: Array.isArray(sp.m) ? sp.m[0] : sp.m });
   const details = await Promise.all(m.map((i) => getMedicineDetail(i.slug))); // "use cache"
@@ -77,7 +77,7 @@ async function Calc({ lang, t, searchParams }: { lang: Locale; t: Dictionary["co
 
   return (
     <div className="space-y-6">
-      <CostCalculator key={rows.map((r) => r.slug).join(",")} lang={lang} t={t} rows={rows} max={MAX_COST_ITEMS} maxQty={MAX_COST_QTY} />
+      <CostCalculator key={rows.map((r) => r.slug).join(",")} lang={lang} t={{ ...t, disclaimer }} rows={rows} max={MAX_COST_ITEMS} maxQty={MAX_COST_QTY} />
       {rows.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border p-6 text-center">
           <p className="text-muted">{t.empty}</p>

@@ -9,6 +9,7 @@ import { getHomeData } from "@/server/services/home.service";
 import { Disclaimer } from "@/components/medicine/Disclaimer";
 import { hasLocale, href } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { siteName, SITE_NAMES } from "@/lib/brand";
 import { absoluteUrl, pageMeta, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import type { Metadata } from "next";
@@ -40,7 +41,8 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: SITE_NAME,
+      name: siteName(lang),
+      alternateName: SITE_NAMES[lang === "bn" ? "en" : "bn"],
       url: absoluteUrl(lang),
       inLanguage: lang,
       description: t.meta.description,
@@ -50,7 +52,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         "query-input": "required name=search_term_string",
       },
     },
-    { "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    { "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, alternateName: SITE_NAMES.bn, url: SITE_URL },
     {
       "@context": "https://schema.org",
       "@type": "FAQPage",
@@ -78,7 +80,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             <span className="text-brand">{h.titleHighlight}</span>
             {h.titleB}
           </h1>
-          <p className="mt-4 max-w-xl text-2xl text-base text-muted md:text-lg">{h.subtitle}</p>
+          <p className="mt-4 max-w-xl text-base text-muted md:max-w-none md:text-lg">{h.subtitle}</p>
 
           <SearchBar lang={lang} t={t.search} autoFocus className="mt-8" />
 
@@ -103,7 +105,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             real, keyboard-focusable control (visible focus ring on the brand background). */}
         <div className="group relative flex items-center justify-between gap-3 rounded-2xl bg-brand p-4 text-white transition hover:brightness-105 sm:p-8 dark:text-slate-900">
           <div className="flex items-center gap-3 sm:gap-4">
-            <span className="grid size-10 shrink-0 place-items-center rounded-lg sm:size-12 sm:rounded-xl bg-white/15">
+            <span className="grid size-10 shrink-0 place-items-center rounded-lg sm:size-12 sm:rounded-xl bg-slate-900 text-white">
               <Camera className="size-5 sm:size-6" aria-hidden />
             </span>
             <div>

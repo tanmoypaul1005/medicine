@@ -18,11 +18,11 @@ type Props = {
 };
 
 const FRAME =
-  "flex items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-lg shadow-brand/5 focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/15 transition";
+  "flex items-center gap-1 rounded-xl border border-border bg-card p-1 md:gap-2 md:rounded-2xl md:p-2 shadow-lg shadow-brand/5 focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/15 transition";
 const INPUT =
-  "h-12 w-full min-w-0 bg-transparent text-base sm:text-lg outline-none placeholder:text-muted";
+  "h-9 w-full min-w-0 bg-transparent text-base md:h-12 md:text-lg outline-none placeholder:text-sm placeholder:text-muted md:placeholder:text-lg";
 const BUTTON =
-  "h-12 shrink-0 rounded-xl bg-brand px-5 font-semibold text-white dark:text-slate-900 hover:opacity-90 transition";
+  "h-9 shrink-0 rounded-lg bg-brand px-3 text-sm font-semibold md:h-12 md:rounded-xl md:px-5 md:text-base text-white dark:text-slate-900 hover:opacity-90 transition";
 
 // RTK Query hooks read Date.now() during render, which cacheComponents forbids in prerender.
 // So the interactive bar renders inside Suspense; the prerendered fallback is a plain
@@ -39,7 +39,7 @@ function StaticSearchForm({ lang, t, defaultValue, className }: Props) {
   return (
     <form action={href(lang, "/search")} role="search" className={cn("relative w-full", className)}>
       <div className={FRAME}>
-        <Search className="ml-2 size-5 shrink-0 text-muted" aria-hidden />
+        <Search className="ml-1 size-4 shrink-0 text-muted md:ml-2 md:size-5" aria-hidden />
         <input
           type="search"
           autoComplete="off"
@@ -100,7 +100,7 @@ function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className
   return (
     <form onSubmit={onSubmit} role="search" className={cn("relative w-full", className)}>
       <div className={FRAME}>
-        <Search className="ml-2 size-5 shrink-0 text-muted" aria-hidden />
+        <Search className="ml-1 size-4 shrink-0 text-muted md:ml-2 md:size-5" aria-hidden />
         <input
           type="search"
           autoComplete="off"
