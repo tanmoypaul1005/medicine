@@ -12,7 +12,8 @@ export const medicineApi = createApi({
   keepUnusedDataFor: 300,
   endpoints: (build) => ({
     autocomplete: build.query<MedicineHit[], string>({
-      query: (q) => ({ url: "autocomplete", params: { q } }),
+      // Normalized like the server cache key → "Napa" / "napa " hit the same CDN entry.
+      query: (q) => ({ url: "autocomplete", params: { q: q.replace(/\s+/g, " ").trim().toLowerCase() } }),
       transformResponse: (res: ApiResponse<MedicineHit[]>) => res.data,
     }),
     search: build.query<SearchResult, { q: string; page?: number }>({

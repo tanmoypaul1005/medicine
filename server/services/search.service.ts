@@ -78,7 +78,15 @@ function searchStage(p: ParsedQuery, extra: Record<string, unknown> = {}): Pipel
   if (p.strength) compound.should = [{ text: { path: "strength", query: p.strength, score: boost(4) } }];
 
   return {
-    $search: { index: MEDICINE_SEARCH_INDEX, compound, sort: { score: { $meta: "searchScore" }, brand: 1 }, ...extra },
+    $search: {
+      index: MEDICINE_SEARCH_INDEX,
+      compound,
+      sort: { score: { $meta: "searchScore" }, brand: 1 },
+      // Hit fields come straight from the index (`storedSource` in models/Medicine.ts) → no per-hit document lookup.
+      // New field in PROJECT → add it to MEDICINE_SEARCH_STORED and run `npm run db:search-index`.
+      returnStoredSource: true,
+      ...extra,
+    },
   } as PipelineStage;
 }
 
@@ -101,20 +109,22 @@ async function atlasSearch(p: ParsedQuery, skip: number, limit: number, withTota
 }
 
 // ---------- Regex fallback (index missing/building, or substring the analyzer can't see) ----------
-async function regexSearch(p: ParsedQuery, skip: number, limit: number) {
+async function regexSearch(p: ParsedQuery, skip: number, limit: number, withTotal = true) {
   const alts = [p.text, ...p.variants].map(escapeRegex).join("|");
   const filter: QueryFilter<MedicineDoc> = {
     $or: [
       { brand: new RegExp(`^(${alts})`, "i") },
       { genericName: new RegExp(alts, "i") },
-      { aliases: p.original },
+      { aliases: new RegExp(`^${escapeRegex(p.original)}$`, "i") }, // "i": the cache key is lowercased
     ],
   };
   if (p.strength) filter.strength = new RegExp(`(^|[^\\d.])${escapeRegex(p.strength)}([^\\d.]|$)`);
-  const [hits, total] = await Promise.all([
-    Medicine.find(filter).sort({ brand: 1, strength: 1 }).skip(skip).limit(limit).select(PROJECT).lean<MedicineHit[]>(),
-    Medicine.countDocuments(filter),
-  ]);
+  const find = Medicine.find(filter).sort({ brand: 1, strength: 1 }).skip(skip).limit(limit).select(PROJECT).lean<MedicineHit[]>();
+  if (!withTotal) {
+    const hits = await find; // autocomplete never shows a total → skip the second collection scan
+    return { hits, total: hits.length };
+  }
+  const [hits, total] = await Promise.all([find, Medicine.countDocuments(filter)]);
   return { hits, total };
 }
 
@@ -131,12 +141,12 @@ async function run(
   } catch (err) {
     console.error("[search] Atlas Search failed, using regex fallback:", (err as Error).message);
   }
-  return { ...(await regexSearch(p, skip, limit)), engine: "regex" };
+  return { ...(await regexSearch(p, skip, limit, withTotal)), engine: "regex" };
 }
 
 // ---------- Public API ----------
-/** Cache key = normalized query (NFC, collapsed spaces). Not lowercased: alias matching uses the original text. */
-const cacheKey = (q: string) => parseQuery(q).original;
+/** Cache key = normalized query (NFC, collapsed spaces, lowercase) so "Napa" and "napa" share one entry. */
+const cacheKey = (q: string) => parseQuery(q).original.toLowerCase();
 
 export async function autocomplete(q: string): Promise<MedicineHit[]> {
   return cachedAutocomplete(cacheKey(q));

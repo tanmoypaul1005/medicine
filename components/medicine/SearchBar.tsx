@@ -78,6 +78,13 @@ function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className
     router.push(href(lang, `/search?q=${encodeURIComponent(query.trim())}`));
   };
 
+  /** Highlight a suggestion and prefetch its page, so the click/Enter navigation is instant. */
+  const highlight = (i: number) => {
+    setActive(i);
+    const hit = suggestions[i];
+    if (hit) router.prefetch(href(lang, `/medicine/${hit.slug}`));
+  };
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (showList && active >= 0) router.push(href(lang, `/medicine/${suggestions[active].slug}`));
@@ -88,10 +95,10 @@ function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className
     if (!showList) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setActive((i) => (i + 1) % suggestions.length);
+      highlight((active + 1) % suggestions.length);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setActive((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+      highlight(active <= 0 ? suggestions.length - 1 : active - 1);
     } else if (e.key === "Escape") {
       setOpen(false);
     }
@@ -144,7 +151,7 @@ function InteractiveSearchBar({ lang, t, defaultValue = "", autoFocus, className
               role="option"
               aria-selected={i === active}
               onMouseDown={() => router.push(href(lang, `/medicine/${m.slug}`))}
-              onMouseEnter={() => setActive(i)}
+              onMouseEnter={() => highlight(i)}
               className={cn(
                 "flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left",
                 i === active && "bg-brand-soft/60"
