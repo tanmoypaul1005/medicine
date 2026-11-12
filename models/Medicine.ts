@@ -46,7 +46,20 @@ MedicineSchema.index({ genericId: 1, strength: 1, formSlug: 1, unitPrice: 1 });
 // Atlas Search index (created by `npm run db:search-index`, not by Mongoose)
 export const MEDICINE_SEARCH_INDEX = "medicine_search";
 const autocomplete = { type: "autocomplete", tokenization: "edgeGram", minGrams: 2, maxGrams: 15, foldDiacritics: true };
+/** Fields a search hit needs. Stored in the index so `$search` + `returnStoredSource` skips the per-hit document lookup. */
+export const MEDICINE_SEARCH_STORED = [
+  "slug",
+  "brand",
+  "type",
+  "strength",
+  "dosageForm",
+  "genericName",
+  "manufacturerName",
+  "unitPrice",
+  "priceLabel",
+] as const;
 export const MEDICINE_SEARCH_DEFINITION = {
+  storedSource: { include: [...MEDICINE_SEARCH_STORED] },
   mappings: {
     dynamic: false,
     fields: {
