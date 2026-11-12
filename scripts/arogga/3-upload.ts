@@ -9,14 +9,17 @@ import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import { connectDB } from "@/lib/db";
 import { Medicine } from "@/models";
-import { IMAGE_SOURCE, REPORT_FILE, parseCsv, sleep } from "./lib";
+import { IMAGE_SOURCE, PLACEHOLDER_HASHES, REPORT_FILE, parseCsv, sleep } from "./lib";
 
 const CONFIRM = process.argv.includes("--confirm");
 const FOLDER = "oshudkhuji/medicines";
 
 async function main() {
   if (!fs.existsSync(REPORT_FILE)) throw new Error(`Run "npm run images:match" first (${REPORT_FILE} missing)`);
-  const rows = parseCsv(fs.readFileSync(REPORT_FILE, "utf8")).filter((r) => r.status === "sure" && r.imageUrl);
+  const report = parseCsv(fs.readFileSync(REPORT_FILE, "utf8"));
+  if (report.length && !("imageHash" in report[0])) throw new Error(`${REPORT_FILE} is from an older version: run "npm run images:match" again`);
+  // Only files whose content was checked: a row without a hash, or with a known "no image" hash, is never uploaded.
+  const rows = report.filter((r) => r.status === "sure" && r.imageUrl && r.imageHash && !PLACEHOLDER_HASHES.has(r.imageHash));
 
   await connectDB();
   const existing = await Medicine.find({ slug: { $in: rows.map((r) => r.ourSlug) }, "image.url": { $exists: true } })
@@ -61,6 +64,7 @@ async function main() {
               sourceUrl: r.aroggaUrl,
               approved: false,
               importedAt: new Date(),
+              hash: r.imageHash,
             },
           },
         }

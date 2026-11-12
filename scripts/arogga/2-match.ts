@@ -4,6 +4,7 @@
  * first `limit` sure matches (1 request/second, most common generics first) and writes data/arogga/report.csv.
  * Re-running resumes: fetched pages are remembered in data/arogga/images.json.
  */
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
@@ -14,15 +15,17 @@ import {
   REPORT_FILE,
   csvCell,
   extractImage,
+  fetchBuffer,
   fetchText,
   indexProducts,
   matchMedicine,
+  placeholderHashes,
   sleep,
   type AroggaProduct,
   type MatchStatus,
 } from "./lib";
 
-type ImageCache = Record<string, { imageUrl: string | null; placeholder: boolean }>; // key = arogga product id
+type ImageCache = Record<string, { imageUrl: string | null; placeholder: boolean; hash?: string }>; // key = arogga product id
 type Row = {
   slug: string;
   brand: string;
@@ -33,6 +36,7 @@ type Row = {
   aroggaUrl: string;
   aroggaId: string;
   imageUrl: string;
+  imageHash: string;
   rank: number;
 };
 
@@ -64,11 +68,18 @@ async function main() {
       aroggaUrl: best?.product.url ?? "",
       aroggaId: best?.product.id ?? "",
       imageUrl: "",
+      imageHash: "",
       rank: popularity.get(String(m.genericId)) ?? 0,
     };
   });
 
   // Product pages: only sure matches, most common generics first, at most LIMIT new requests.
+  // One arogga product claimed by several of our medicines (IM vs IV injection of one brand, duplicate rows) →
+  // the photo can only be right for one of them and would be stored twice → none of them is sure.
+  const claims = new Map<string, number>();
+  for (const r of rows) if (r.status === "sure") claims.set(r.aroggaId, (claims.get(r.aroggaId) ?? 0) + 1);
+  for (const r of rows) if (r.status === "sure" && (claims.get(r.aroggaId) ?? 0) > 1) r.status = "ambiguous";
+
   // --first=napa,seclo → medicines whose slug starts with one of these are fetched before everything else.
   const first = (arg("first") ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
   const wanted = (r: Row) => (first.some((p) => r.slug === p || r.slug.startsWith(`${p}-`)) ? 0 : 1);
@@ -76,6 +87,7 @@ async function main() {
     .filter((r) => r.status === "sure")
     .sort((a, b) => wanted(a) - wanted(b) || b.rank - a.rank || a.slug.localeCompare(b.slug));
   let fetched = 0;
+  let hashed = 0;
   for (const r of sure) {
     let hit = cache[r.aroggaId];
     if (!hit) {
@@ -97,16 +109,41 @@ async function main() {
         console.log(`  fetched ${fetched} pages…`);
       }
     }
-    if (hit.imageUrl) r.imageUrl = hit.imageUrl;
-    else r.status = hit.placeholder ? "placeholder" : "none";
+    // Hash the image file itself: arogga's "no image" picture has ordinary-looking file names, only its content tells.
+    if (hit.imageUrl && !hit.hash) {
+      await sleep(300);
+      try {
+        hit.hash = createHash("md5").update(await fetchBuffer(hit.imageUrl)).digest("hex");
+      } catch (err) {
+        console.error(`  no hash for ${r.aroggaUrl}: ${(err as Error).message}`);
+      }
+      if (++hashed % 50 === 0) {
+        fs.writeFileSync(IMAGE_CACHE_FILE, JSON.stringify(cache));
+        console.log(`  checked ${hashed} image files…`);
+      }
+    }
   }
   fs.writeFileSync(IMAGE_CACHE_FILE, JSON.stringify(cache));
 
-  const header = "ourSlug,ourBrand,ourStrength,ourForm,status,score,aroggaUrl,imageUrl";
+  // Decide after all hashes are known: a file shared by several products is a placeholder, whichever run fetched it.
+  const blocked = placeholderHashes(Object.values(cache).flatMap((c) => (c.hash ? [c.hash] : [])));
+  for (const r of sure) {
+    const hit = cache[r.aroggaId];
+    if (r.status !== "sure" || !hit) continue;
+    if (!hit.imageUrl) r.status = hit.placeholder ? "placeholder" : "none";
+    else if (!hit.hash) r.status = "pending"; // could not verify the file → not uploaded
+    else if (blocked.has(hit.hash)) r.status = "placeholder";
+    else {
+      r.imageUrl = hit.imageUrl;
+      r.imageHash = hit.hash;
+    }
+  }
+
+  const header = "ourSlug,ourBrand,ourStrength,ourForm,status,score,aroggaUrl,imageUrl,imageHash";
   const order = ["sure", "pending", "placeholder", "ambiguous", "none"];
   rows.sort((a, b) => order.indexOf(a.status) - order.indexOf(b.status) || b.rank - a.rank || a.slug.localeCompare(b.slug));
   const lines = rows.map((r) =>
-    [r.slug, r.brand, r.strength, r.dosageForm, r.status, r.score, r.aroggaUrl, r.imageUrl].map(csvCell).join(",")
+    [r.slug, r.brand, r.strength, r.dosageForm, r.status, r.score, r.aroggaUrl, r.imageUrl, r.imageHash].map(csvCell).join(",")
   );
   fs.writeFileSync(REPORT_FILE, "﻿" + [header, ...lines].join("\n"));
 

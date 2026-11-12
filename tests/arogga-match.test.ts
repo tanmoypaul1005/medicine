@@ -1,6 +1,15 @@
 /** npm run test:images — matching rules of the arogga image import (no network, no DB). */
 import assert from "node:assert/strict";
-import { extractImage, indexProducts, matchMedicine, parseAroggaSlug, sameStrength, strengthParts, type AroggaProduct } from "../scripts/arogga/lib";
+import {
+  extractImage,
+  indexProducts,
+  matchMedicine,
+  parseAroggaSlug,
+  placeholderHashes,
+  sameStrength,
+  strengthParts,
+  type AroggaProduct,
+} from "../scripts/arogga/lib";
 
 const product = (id: string, slug: string): AroggaProduct => ({ id, slug, url: `https://www.arogga.com/product/${id}/${slug}` });
 const byBrand = indexProducts([
@@ -58,5 +67,11 @@ const page = (url: string) => `<meta property="og:image" content="${url}"/>`;
 assert.equal(extractImage(page(cdn("Product-p_images/1023/1023-no-image-m7w34a.jpeg"))).placeholder, true);
 assert.equal(extractImage(page(cdn("Product-p_images/1/1-napa.jpeg"))).imageUrl, cdn("Product-p_images/1/1-napa.jpeg"));
 assert.equal(extractImage("<html></html>").imageUrl, null);
+
+// "no image" pictures: known hashes, or the same file on 3+ products
+const blocked = placeholderHashes(["aaa", "aaa", "aaa", "bbb", "bbb", "ccc"]);
+assert.ok(blocked.has("aaa")); // same file on 3 products
+assert.ok(!blocked.has("bbb") && !blocked.has("ccc")); // two strengths may share one real photo
+assert.ok(blocked.has("5ea46adbd35e810f863d743eadaab6a9")); // known arogga placeholder
 
 console.log("arogga-match: all assertions passed");

@@ -4,6 +4,10 @@
 >
 > **চালানোর ক্রম:** `npm run images:sitemap` → `npm run images:match -- --limit=100` (dry-run, `data/arogga/report.csv`) → রিপোর্ট দেখা → `npm run images:upload -- --confirm` → Cloudinary-তে চোখে দেখা → `npm run images:approve -- --all` (বা `--slugs=a,b`; `--undo` দিয়ে লুকানো) → `POST /api/revalidate {"tags":["medicines"]}`। Test: `npm run test:images`।
 >
+> **এক command-এ সব:** `npm run images:sync -- --limit=100` (sitemap → match → upload; ছবি লুকানো থাকে)। `--approve` দিলে চোখে না দেখেই approve + cache refresh হয়; `--first=napa,seclo` নির্দিষ্ট brand আগে আনে; `--all` সব; `--refresh-sitemap` arogga-র তালিকা নতুন করে আনে।
+>
+> **Placeholder ("ছবি নেই") আটকানো:** arogga-র placeholder-এর file নাম সাধারণ ছবির মতো ("WhatsApp-Image-…", "Untitled"), তাই নাম দিয়ে ধরা যায় না। Match ধাপ এখন প্রতিটা ছবির file-এর md5 hash নেয়; `PLACEHOLDER_HASHES`-এ থাকা hash বা 3+ product-এ একই file হলে `placeholder`, upload হয় না। এই নিয়মের আগে upload হওয়া placeholder সরাতে: `npm run images:clean` (শুধু রিপোর্ট), `-- --confirm` দিলে Cloudinary + DB দুই জায়গা থেকে মোছে।
+>
 > **Plan থেকে যা আলাদা হয়েছে:**
 > - Watermark: বিকল্প **B** (arogga যেমন দেয় তেমন, watermark-সহ)। arogga থেকে মূল ছবি পেলে `report.csv`-এর `imageUrl` বদলে একই upload script চলবে।
 > - Scope: `--top=100`-এর বদলে `--limit=N`: সব medicine match হয় (network লাগে না), তারপর সবচেয়ে প্রচলিত generic-এর প্রথম N টা নিশ্চিত match-এর page fetch হয়। `--all` = সব।

@@ -5,22 +5,41 @@ export const PRODUCTS_FILE = `${DATA_DIR}/products.json`;
 export const REPORT_FILE = `${DATA_DIR}/report.csv`;
 export const IMAGE_CACHE_FILE = `${DATA_DIR}/images.json`;
 export const IMAGE_SOURCE = "arogga.com (permission)";
+/** The same image file on this many medicines is arogga's "no image" picture, not a product photo. */
+export const PLACEHOLDER_MIN_COPIES = 3;
 
 export type AroggaProduct = { id: string; slug: string; url: string };
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * arogga's "no image" pictures (md5 of the file as their CDN serves it). Their file names look like real uploads
+ * ("WhatsApp-Image-…", "Untitled"), so only the content tells. Unknown ones are caught by PLACEHOLDER_MIN_COPIES.
+ */
+export const PLACEHOLDER_HASHES = new Set(["5ea46adbd35e810f863d743eadaab6a9", "c62cb099b0062bfff4e6e9d9eee2c9dd"]);
+
+/** hashes = every image hash seen so far (one entry per arogga product). */
+export function placeholderHashes(hashes: string[]): Set<string> {
+  const counts = new Map<string, number>();
+  for (const h of hashes) counts.set(h, (counts.get(h) ?? 0) + 1);
+  const out = new Set(PLACEHOLDER_HASHES);
+  for (const [h, n] of counts) if (n >= PLACEHOLDER_MIN_COPIES) out.add(h);
+  return out;
+}
+
+export const fetchText = async (url: string) => (await fetchBuffer(url)).toString("utf8");
+
 /** Polite fetch: generic UA, retries with backoff on 429/5xx/network errors. */
-export async function fetchText(url: string, tries = 4): Promise<string> {
+export async function fetchBuffer(url: string, tries = 4): Promise<Buffer> {
   let lastErr: unknown;
   for (let i = 0; i < tries; i++) {
     if (i) await sleep(2000 * 2 ** i);
     try {
       const res = await fetch(url, {
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; medicine-image-import/1.0)", Accept: "text/html,application/xml" },
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; medicine-image-import/1.0)" },
         signal: AbortSignal.timeout(30_000),
       });
-      if (res.ok) return await res.text();
+      if (res.ok) return Buffer.from(await res.arrayBuffer());
       if (res.status !== 429 && res.status < 500) throw Object.assign(new Error(`HTTP ${res.status} ${url}`), { fatal: true });
       lastErr = new Error(`HTTP ${res.status} ${url}`);
     } catch (err) {

@@ -11,10 +11,12 @@
     "db:sync-dgda": "tsx --env-file=.env scripts/sync-dgda.ts",
     "test:search": "tsx scripts/test-search.ts",
     "test:images": "tsx tests/arogga-match.test.ts",
+    "images:sync": "tsx --env-file=.env scripts/arogga/sync.ts",
     "images:sitemap": "tsx scripts/arogga/1-sitemap.ts",
     "images:match": "tsx --env-file=.env scripts/arogga/2-match.ts",
     "images:upload": "tsx --env-file=.env scripts/arogga/3-upload.ts",
-    "images:approve": "tsx --env-file=.env scripts/arogga/4-approve.ts"
+    "images:approve": "tsx --env-file=.env scripts/arogga/4-approve.ts",
+    "images:clean": "tsx --env-file=.env scripts/arogga/5-clean.ts"
   },
   "dependencies": {
     "@google/genai": "^3.0.0",

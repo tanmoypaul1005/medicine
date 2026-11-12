@@ -45,6 +45,8 @@ const MedicineSchema = new Schema(
       sourceUrl: String, // product page it came from (audit)
       approved: { type: Boolean, default: false },
       importedAt: Date,
+      hash: String, // md5 of the image file — the same file on several medicines = source's "no image" picture
+      placeholder: Boolean, // true = source has no real photo (no url); remembered so it is not imported again
     },
   },
   { timestamps: true }
