@@ -9,12 +9,18 @@
     "lint": "eslint",
     "db:search-index": "tsx --env-file=.env scripts/search-index.ts",
     "db:sync-dgda": "tsx --env-file=.env scripts/sync-dgda.ts",
-    "test:search": "tsx scripts/test-search.ts"
+    "test:search": "tsx scripts/test-search.ts",
+    "test:images": "tsx tests/arogga-match.test.ts",
+    "images:sitemap": "tsx scripts/arogga/1-sitemap.ts",
+    "images:match": "tsx --env-file=.env scripts/arogga/2-match.ts",
+    "images:upload": "tsx --env-file=.env scripts/arogga/3-upload.ts",
+    "images:approve": "tsx --env-file=.env scripts/arogga/4-approve.ts"
   },
   "dependencies": {
     "@google/genai": "^3.0.0",
     "@reduxjs/toolkit": "^2.14.0",
     "@vercel/analytics": "^2.0.1",
+    "cloudinary": "^2.11.0",
     "clsx": "^2.1.1",
     "lucide-react": "^1.70.0",
     "mongoose": "^9.12.0",

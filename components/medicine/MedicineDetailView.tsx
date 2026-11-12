@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, BadgePercent, ChevronDown, ExternalLink, Factory, FlaskConical, Info, Pill } from "lucide-react";
 import { href, type Locale } from "@/lib/i18n/config";
@@ -31,7 +32,24 @@ export function MedicineHeader({ lang, t, m }: Props) {
   const genericName = m.generic?.name ?? m.genericNameRaw;
   return (
     <div className="grid gap-4 md:grid-cols-[1fr_auto]">
-      <div className="rounded-2xl border border-border bg-card p-6">
+      <div className={cn("rounded-2xl border border-border bg-card p-6", m.image && "sm:flex sm:items-start sm:gap-6")}>
+        {m.image && (
+          <figure className="mb-4 shrink-0 sm:order-last sm:mb-0">
+            <Image
+              src={m.image.url}
+              alt={[m.brand, m.strength, m.dosageForm].filter(Boolean).join(" ")}
+              width={m.image.width}
+              height={m.image.height}
+              sizes="(min-width: 640px) 176px, 60vw"
+              priority
+              className="mx-auto aspect-square w-3/5 rounded-xl border border-border bg-white object-contain sm:w-44"
+            />
+            {m.image.source && (
+              <figcaption className="mt-1 text-center text-xs text-muted">{fill(t.imageCredit, { source: m.image.source })}</figcaption>
+            )}
+          </figure>
+        )}
+        <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-medium text-brand">{m.dosageForm}</span>
           {m.type === "herbal" && (
@@ -67,6 +85,7 @@ export function MedicineHeader({ lang, t, m }: Props) {
             </Fact>
           )}
         </dl>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 md:min-w-64">

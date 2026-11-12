@@ -49,6 +49,7 @@ function drugLd(lang: Locale, m: MedicineDetail) {
     isProprietary: true,
     ...(generic && { nonProprietaryName: generic, activeIngredient: generic }),
     dosageForm: m.dosageForm,
+    ...(m.image && { image: m.image.url }),
     ...(m.manufacturerName && { manufacturer: { "@type": "Organization", name: m.manufacturerName } }),
     ...(m.generic?.drugClass && { drugClass: { "@type": "DrugClass", name: m.generic.drugClass } }),
     ...(m.generic?.pregnancyCategory && { pregnancyCategory: `https://schema.org/FDAcategory${m.generic.pregnancyCategory}` }),

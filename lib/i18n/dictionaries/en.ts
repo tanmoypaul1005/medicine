@@ -118,6 +118,7 @@ const en: Dictionary = {
     per: "per",
     noPrice: "Price unknown",
     packs: "Packs & prices",
+    imageCredit: "Image: {source}",
     pack: "Pack of {n}",
     alternatives: "Cheaper alternatives",
     alternativesSub: "Same generic, strength and form — sorted by price",

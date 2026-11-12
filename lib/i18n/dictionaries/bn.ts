@@ -116,6 +116,7 @@ const bn = {
     per: "প্রতি",
     noPrice: "দাম জানা নেই",
     packs: "প্যাক ও দাম",
+    imageCredit: "ছবি: {source}",
     pack: "{n}টির প্যাক",
     alternatives: "সস্তা বিকল্প",
     alternativesSub: "একই generic, strength ও form — দাম অনুযায়ী সাজানো",

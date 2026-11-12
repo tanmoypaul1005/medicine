@@ -42,3 +42,6 @@ next-env.d.ts
 
 # raw CSV dumps
 /data/raw/
+
+# arogga image import working files (product list, dry-run report)
+/data/arogga/

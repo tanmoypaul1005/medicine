@@ -24,6 +24,7 @@ export type MedicineDetail = {
   unitPrice: number | null;
   priceLabel: string | null;
   packs: Pack[];
+  image: { url: string; width: number; height: number; source: string | null } | null; // approved photos only
   generic: {
     name: string;
     slug: string;
@@ -60,7 +61,7 @@ export async function getMedicineDetail(slug: string): Promise<MedicineDetail | 
 
   await connectDB();
   const m = await Medicine.findOne({ slug })
-    .select("slug brand type strength dosageForm formSlug genericId genericName manufacturerId manufacturerName unitPrice packs")
+    .select("slug brand type strength dosageForm formSlug genericId genericName manufacturerId manufacturerName unitPrice packs image")
     .lean();
   if (!m) return null;
 
@@ -101,6 +102,10 @@ export async function getMedicineDetail(slug: string): Promise<MedicineDetail | 
     unitPrice: m.unitPrice ?? null,
     priceLabel: priceLabelOf(m.packs),
     packs: (m.packs ?? []).map((p) => ({ label: p.label, price: p.price, qty: p.qty ?? undefined, qtyPrice: p.qtyPrice ?? undefined })),
+    image:
+      m.image?.approved && m.image.url
+        ? { url: m.image.url, width: m.image.width ?? 600, height: m.image.height ?? 600, source: m.image.source ?? null }
+        : null,
     generic: generic
       ? {
           name: generic.name,

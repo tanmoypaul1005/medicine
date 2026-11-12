@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
     globalNotFound: true,
   },
   cacheComponents: true,
+  // Medicine photos are stored on Cloudinary (docs/medicine-images-plan.md).
+  images: { remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }] },
   partialPrefetching: true,
   turbopack: {
     rules: {
