@@ -25,6 +25,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const t = getDictionary(lang).meta;
+  
   // Site-wide defaults only. Canonical/hreflang are set per page (lib/seo.ts pageMeta) — never here,
   // or every page would inherit the home page's alternates.
   return {
