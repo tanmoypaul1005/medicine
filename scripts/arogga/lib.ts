@@ -4,7 +4,7 @@ export const DATA_DIR = "data/arogga";
 export const PRODUCTS_FILE = `${DATA_DIR}/products.json`;
 export const REPORT_FILE = `${DATA_DIR}/report.csv`;
 export const IMAGE_CACHE_FILE = `${DATA_DIR}/images.json`;
-export const IMAGE_SOURCE = "arogga.com (permission)";
+export const IMAGE_SOURCE = "";
 /** The same image file on this many medicines is arogga's "no image" picture, not a product photo. */
 export const PLACEHOLDER_MIN_COPIES = 3;
 
